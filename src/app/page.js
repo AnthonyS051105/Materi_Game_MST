@@ -3,20 +3,303 @@
 import { useState } from "react";
 import { Download, Users, BookOpen, Target, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import PptxGenJS from "pptxgenjs";
 
 export default function Home() {
   const [isConverting, setIsConverting] = useState(false);
 
-  const handleConvertToPPT = () => {
+  const handleConvertToPPT = async () => {
     setIsConverting(true);
 
-    // Simulasi konversi ke PowerPoint
-    setTimeout(() => {
-      alert(
-        "Fitur konversi ke PowerPoint akan segera tersedia! Untuk saat ini, Anda dapat menggunakan tools seperti html-to-pptx atau mengcopy konten secara manual."
+    try {
+      // Buat instance PowerPoint baru
+      const pptx = new PptxGenJS();
+
+      // Slide 1: Cover
+      const slide1 = pptx.addSlide();
+      slide1.addText("Minimum Spanning Tree", {
+        x: 1,
+        y: 2,
+        w: 8,
+        h: 2,
+        fontSize: 36,
+        fontFace: "Arial",
+        color: "ffffff",
+        fill: "3b82f6",
+        align: "center",
+      });
+
+      slide1.addText("Website Pembelajaran MST", {
+        x: 1,
+        y: 4,
+        w: 8,
+        h: 1,
+        fontSize: 20,
+        fontFace: "Arial",
+        color: "666666",
+        align: "center",
+      });
+
+      // Slide 2: Pengertian MST
+      const slide2 = pptx.addSlide();
+      slide2.addText("Pengertian MST", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 1,
+        fontSize: 32,
+        fontFace: "Arial",
+        color: "1e40af",
+        bold: true,
+      });
+
+      slide2.addText(
+        [
+          { text: "Minimum Spanning Tree (MST) ", options: { bold: true } },
+          {
+            text: "adalah spanning tree dari graf berbobot yang memiliki total bobot edge paling minimum.",
+          },
+        ],
+        {
+          x: 0.5,
+          y: 1.5,
+          w: 9,
+          h: 3,
+          fontSize: 18,
+          fontFace: "Arial",
+          color: "374151",
+        }
       );
+
+      slide2.addText("Karakteristik MST:", {
+        x: 0.5,
+        y: 3,
+        w: 9,
+        h: 0.5,
+        fontSize: 20,
+        fontFace: "Arial",
+        color: "1e40af",
+        bold: true,
+      });
+
+      slide2.addText(
+        [
+          "• Terhubung (Connected)\n",
+          "• Asiklik (Acyclic)\n",
+          "• Jumlah Edge = V - 1\n",
+          "• Bobot Minimum",
+        ],
+        {
+          x: 1,
+          y: 3.5,
+          w: 8,
+          h: 2.5,
+          fontSize: 16,
+          fontFace: "Arial",
+          color: "374151",
+          bullet: true,
+        }
+      );
+
+      // Slide 3: Algoritma Kruskal
+      const slide3 = pptx.addSlide();
+      slide3.addText("Algoritma Kruskal", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 1,
+        fontSize: 32,
+        fontFace: "Arial",
+        color: "16a34a",
+        bold: true,
+      });
+
+      slide3.addText("Langkah-langkah:", {
+        x: 0.5,
+        y: 1.5,
+        w: 9,
+        h: 0.5,
+        fontSize: 20,
+        fontFace: "Arial",
+        color: "16a34a",
+        bold: true,
+      });
+
+      slide3.addText(
+        [
+          "1. Urutkan semua edge berdasarkan bobot (ascending)\n",
+          "2. Inisialisasi Union-Find untuk deteksi cycle\n",
+          "3. Untuk setiap edge, periksa apakah menambahkannya akan membentuk cycle\n",
+          "4. Jika tidak membentuk cycle, tambahkan edge ke MST\n",
+          "5. Ulangi hingga MST memiliki V-1 edge",
+        ],
+        {
+          x: 1,
+          y: 2,
+          w: 8,
+          h: 3,
+          fontSize: 16,
+          fontFace: "Arial",
+          color: "374151",
+        }
+      );
+
+      slide3.addText("Kompleksitas: O(E log E)", {
+        x: 1,
+        y: 5.5,
+        w: 8,
+        h: 0.5,
+        fontSize: 16,
+        fontFace: "Arial",
+        color: "16a34a",
+        bold: true,
+      });
+
+      // Slide 4: Algoritma Prim
+      const slide4 = pptx.addSlide();
+      slide4.addText("Algoritma Prim", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 1,
+        fontSize: 32,
+        fontFace: "Arial",
+        color: "9333ea",
+        bold: true,
+      });
+
+      slide4.addText("Langkah-langkah:", {
+        x: 0.5,
+        y: 1.5,
+        w: 9,
+        h: 0.5,
+        fontSize: 20,
+        fontFace: "Arial",
+        color: "9333ea",
+        bold: true,
+      });
+
+      slide4.addText(
+        [
+          "1. Pilih vertex awal (arbitrary)\n",
+          "2. Masukkan vertex ke dalam MST set\n",
+          "3. Temukan edge berbobot minimum yang menghubungkan MST set dengan vertex di luar\n",
+          "4. Tambahkan edge dan vertex baru ke MST\n",
+          "5. Ulangi hingga semua vertex termasuk dalam MST",
+        ],
+        {
+          x: 1,
+          y: 2,
+          w: 8,
+          h: 3,
+          fontSize: 16,
+          fontFace: "Arial",
+          color: "374151",
+        }
+      );
+
+      slide4.addText("Kompleksitas: O(V²) atau O(E log V)", {
+        x: 1,
+        y: 5.5,
+        w: 8,
+        h: 0.5,
+        fontSize: 16,
+        fontFace: "Arial",
+        color: "9333ea",
+        bold: true,
+      });
+
+      // Slide 5: Perbandingan
+      const slide5 = pptx.addSlide();
+      slide5.addText("Perbandingan Kruskal vs Prim", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 1,
+        fontSize: 28,
+        fontFace: "Arial",
+        color: "ea580c",
+        bold: true,
+      });
+
+      // Tabel perbandingan
+      const tableData = [
+        [
+          { text: "Kriteria", options: { bold: true, fill: "f3f4f6" } },
+          { text: "Kruskal", options: { bold: true, fill: "dcfce7" } },
+          { text: "Prim", options: { bold: true, fill: "f3e8ff" } },
+        ],
+        ["Approach", "Edge-based", "Vertex-based"],
+        ["Best for", "Sparse Graph", "Dense Graph"],
+        ["Data Structure", "Union-Find", "Priority Queue"],
+        ["Time Complexity", "O(E log E)", "O(V²) atau O(E log V)"],
+      ];
+
+      slide5.addTable(tableData, {
+        x: 0.5,
+        y: 2,
+        w: 9,
+        h: 3,
+        fontSize: 14,
+        fontFace: "Arial",
+        border: { pt: 1, color: "cccccc" },
+      });
+
+      // Slide 6: Implementasi Power Grid
+      const slide6 = pptx.addSlide();
+      slide6.addText("Implementasi: Power Grid System", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 1,
+        fontSize: 28,
+        fontFace: "Arial",
+        color: "dc2626",
+        bold: true,
+      });
+
+      slide6.addText("Penerapan MST dalam jaringan distribusi listrik:", {
+        x: 0.5,
+        y: 1.5,
+        w: 9,
+        h: 0.5,
+        fontSize: 18,
+        fontFace: "Arial",
+        color: "374151",
+      });
+
+      slide6.addText(
+        [
+          "• Minimisasi biaya infrastruktur (35-50% saving)\n",
+          "• Optimasi jalur distribusi\n",
+          "• Redundansi terkontrol\n",
+          "• Efficiency dalam maintenance\n\n",
+          "Studi Kasus:\n",
+          "- PLN Indonesia: Saving 2.1 triliun rupiah\n",
+          "- European Grid: 40% pengurangan biaya\n",
+          "- Smart Grid USA: AI-powered optimization",
+        ],
+        {
+          x: 1,
+          y: 2,
+          w: 8,
+          h: 4,
+          fontSize: 16,
+          fontFace: "Arial",
+          color: "374151",
+        }
+      );
+
+      // Download file
+      await pptx.writeFile({ fileName: "MST_Learning_Presentation.pptx" });
+
+      alert("PowerPoint berhasil didownload!");
+    } catch (error) {
+      console.error("Error generating PPT:", error);
+      alert("Terjadi kesalahan saat membuat PowerPoint. Silakan coba lagi.");
+    } finally {
       setIsConverting(false);
-    }, 2000);
+    }
   };
 
   const teamMembers = [
