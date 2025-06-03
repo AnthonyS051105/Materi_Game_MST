@@ -13,8 +13,10 @@
     "lucide-react": "^0.511.0",
     "next": "^15.3.3",
     "pptxgenjs": "^4.0.0",
+    "prismjs": "^1.30.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
