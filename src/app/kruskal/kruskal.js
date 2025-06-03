@@ -78,8 +78,7 @@ export default function Kruskal() {
             Algoritma Kruskal
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Algoritma greedy yang membangun MST dengan memilih edge berbobot
-            minimum yang tidak membentuk cycle
+            Algoritma Kruskal adalah algoritma greedy di dalam teori graph yang bertujuan untuk mencari Minimum Spanning Tree (MST). Algoritma ini bekerja dengan cara memilih edge yang memiliki bobot terkecil satu per satu tanpa membentuk siklus hingga semua simpul terhubung.
           </p>
         </div>
 
