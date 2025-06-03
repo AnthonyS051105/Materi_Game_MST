@@ -4,6 +4,104 @@ import { useState, useEffect } from "react";
 import { Play, Pause, RotateCcw, Settings } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 import AlgorithmStep from "../components/AlgorithmStep";
+import TextEditor from "../components/TextEditor"
+import PseudoText from "../components/Pseudocode";
+
+const edgeCode = `// Kode structure Edge
+struct Edge {
+    int u, v, weight;
+
+    bool operator<(const Edge& other) const {
+        return weight < other.weight;
+    }
+};`;
+
+const unionFindCode = ` // Kode disjoint-set (UnionFind)
+class UnionFind {
+    private:
+        vector<int> parent, rank;
+    public:
+        UnionFind(int n) {
+            parent.resize(n);
+            rank.resize(n, 0);
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+            }
+        }
+        int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+        bool unite(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if (rootX == rootY) return false;
+
+            if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+            } else {
+                parent[rootY] = rootX;
+                rank[rootX]++;
+            }
+            return true;
+        }
+};
+`
+
+const kruskalCode = ` // Kode kruskal
+int kruskal(int n, vector<Edge>& edges, vector<Edge>& mst) {
+    sort(edges.begin(), edges.end());
+    UnionFind uf(n);
+    int mstWeight = 0;
+
+    for (const auto& edge : edges) {
+        if (uf.unite(edge.u, edge.v)) {
+            mst.push_back(edge);
+            mstWeight += edge.weight;
+        }
+    }
+
+    return mstWeight;
+}
+`
+
+const mainCode = ` // Kode implementasi algoritma kruskal
+int main() {
+    int n = 5;
+    vector<Edge> edges = {
+        {0, 1, 10},
+        {0, 2, 6},
+        {0, 3, 5},
+        {1, 3, 15},
+        {2, 3, 4}
+    };
+
+    vector<Edge> mst;
+    int totalWeight = kruskal(n, edges, mst);
+
+    cout << "Total weight of MST: " << totalWeight << endl;
+    cout << "Edges in MST:" << endl;
+    for (const auto& edge : mst) {
+        cout << edge.u << " - " << edge.v << " : " << edge.weight << endl;
+    }
+
+    return 0;
+}
+`
+
+const kruskalPseudoCode = `FUNCTION kruskal(n, edges):
+  SORT(edges by weight)
+  uf = UnionFind(n), mst=[], weight=0
+  FOR edge IN edges:
+    IF uf.unite(edge.u, edge.v):
+      mst.add(edge), weight += edge.weight
+  RETURN (mst, weight)
+`
 
 export default function Kruskal() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -78,8 +176,7 @@ export default function Kruskal() {
             Algoritma Kruskal
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Algoritma greedy yang membangun MST dengan memilih edge berbobot
-            minimum yang tidak membentuk cycle
+            Algoritma Kruskal adalah algoritma greedy di dalam teori graph yang bertujuan untuk mencari Minimum Spanning Tree (MST). Algoritma ini bekerja dengan cara memilih edge yang memiliki bobot terkecil satu per satu tanpa membentuk siklus hingga semua simpul terhubung.
           </p>
         </div>
 
@@ -143,7 +240,7 @@ export default function Kruskal() {
                 <div>
                   <span className="font-medium">Space Complexity:</span>
                   <span className="ml-2 bg-green-100 px-2 py-1 rounded text-sm">
-                    O(V)
+                    O(E + V)
                   </span>
                 </div>
                 <p className="text-green-700 text-sm mt-3">
@@ -273,6 +370,20 @@ export default function Kruskal() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <h1 className="text-2xl font-bold mb-6 text-green-800 pt-4 pb-2">Pseudocode Algoritma Kruskal</h1>
+        <div className="flex justify-center items-center pt-2">
+          <PseudoText pseudoCode={kruskalPseudoCode} />
+        </div>
+        <h1 className="text-2xl font-bold mb-6 text-green-800 pt-4 pb-2">Implementasi Algoritma Kruskal dalam C++</h1>
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <TextEditor cppCode={edgeCode} />
+          <TextEditor cppCode={unionFindCode} />
+        </div>
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <TextEditor cppCode={kruskalCode} />
+          <TextEditor cppCode={mainCode} />
         </div>
       </div>
     </div>

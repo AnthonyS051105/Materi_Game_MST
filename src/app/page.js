@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { Pixelify_Sans } from 'next/font/google';
+
+const pixelifySans = Pixelify_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 // Comprehensive PPT Creator with UI-based design
 const ComprehensivePPTCreator = ({ isConverting, setIsConverting }) => {
@@ -1029,7 +1035,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-6">Minimum Spanning Tree</h1>
+          <h1 className={`text-5xl font-bold mb-6 ${pixelifySans.className}`}>Minimum Spanning Tree</h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
             Jelajahi dunia algoritma graf yang menakjubkan! Pelajari konsep MST,
             algoritma Kruskal dan Prim, serta implementasinya dalam kehidupan
