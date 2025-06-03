@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Download,
   Users,
@@ -12,641 +12,972 @@ import {
   Globe,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
-export default function Home() {
-  const [isConverting, setIsConverting] = useState(false);
+// Comprehensive PPT Creator with UI-based design
+const ComprehensivePPTCreator = ({ isConverting, setIsConverting }) => {
+  const [isClient, setIsClient] = useState(false);
 
-  // Fungsi untuk capture screenshot dari element
-  const captureElement = async (elementId, options = {}) => {
-    try {
-      const html2canvas = (await import("html2canvas")).default;
-      const element =
-        document.getElementById(elementId) || document.querySelector(elementId);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-      if (!element) {
-        console.warn(`Element ${elementId} not found`);
-        return null;
-      }
-
-      const canvas = await html2canvas(element, {
-        useCORS: true,
-        allowTaint: false,
-        scale: 2, // Higher quality
-        width: 1920, // Standard presentation width
-        height: 1080, // Standard presentation height
-        backgroundColor: "#ffffff",
-        ...options,
-      });
-
-      return canvas.toDataURL("image/png");
-    } catch (error) {
-      console.error("Error capturing element:", error);
-      return null;
-    }
-  };
-
-  // Fungsi utama untuk convert UI ke PPT
-  const handleConvertUIToPPT = async () => {
+  const createComprehensivePPT = async () => {
+    if (!isClient) return;
     setIsConverting(true);
 
     try {
-      console.log("Starting UI to PPT conversion...");
+      // Load PptxGenJS from multiple CDN sources
+      const cdnSources = [
+        "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+        "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.min.js",
+      ];
 
-      // Dynamic import libraries
-      const PptxGenJS = (await import("pptxgenjs")).default;
-      const html2canvas = (await import("html2canvas")).default;
+      let PptxGenJS = null;
+
+      for (const cdn of cdnSources) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = cdn;
+            script.onload = () => {
+              if (window.PptxGenJS) {
+                PptxGenJS = window.PptxGenJS;
+                resolve();
+              } else {
+                reject(new Error("PptxGenJS not found"));
+              }
+            };
+            script.onerror = () =>
+              reject(new Error(`Failed to load from ${cdn}`));
+
+            const existing = document.querySelector(`script[src="${cdn}"]`);
+            if (existing) existing.remove();
+
+            document.head.appendChild(script);
+          });
+          if (PptxGenJS) break;
+        } catch (error) {
+          continue;
+        }
+      }
+
+      if (!PptxGenJS) {
+        throw new Error("Failed to load PptxGenJS from all CDN sources");
+      }
+
+      console.log("Creating comprehensive MST presentation...");
 
       const pptx = new PptxGenJS();
-      pptx.layout = "LAYOUT_16x9"; // Widescreen format
+
+      // Set proper PowerPoint layout (16:9 ratio)
+      pptx.layout = "LAYOUT_16x9";
       pptx.author = "MST Learning Team";
-      pptx.title = "MST Learning - UI Presentation";
+      pptx.title = "Minimum Spanning Tree - Comprehensive Learning Guide";
+      pptx.subject = "Graph Algorithm Education";
+
+      // Define consistent color scheme matching website
+      const colors = {
+        primary: "2563EB", // Blue-600
+        secondary: "4338CA", // Indigo-700
+        success: "22C55E", // Green-500
+        warning: "F59E0B", // Amber-500
+        danger: "EF4444", // Red-500
+        purple: "8B5CF6", // Purple-500
+        gray: "6B7280", // Gray-500
+        lightGray: "F9FAFB", // Gray-50
+        white: "FFFFFF",
+        dark: "111827", // Gray-900
+      };
+
+      // Helper function to add card with shadow effect
+      const addCard = (
+        slide,
+        x,
+        y,
+        w,
+        h,
+        bgColor = colors.white,
+        borderColor = "E5E7EB"
+      ) => {
+        // Shadow effect
+        slide.addShape(pptx.ShapeType.rect, {
+          x: x + 0.05,
+          y: y + 0.05,
+          w: w,
+          h: h,
+          fill: "00000020",
+          line: { width: 0 },
+        });
+
+        // Main card
+        slide.addShape(pptx.ShapeType.rect, {
+          x: x,
+          y: y,
+          w: w,
+          h: h,
+          fill: bgColor,
+          line: { color: borderColor, width: 1 },
+        });
+      };
 
       // ===============================
-      // SLIDE 1: Hero Section Capture
+      // SLIDE 1: TITLE SLIDE
       // ===============================
-      console.log("Capturing hero section...");
-
-      const heroElement = document.createElement("div");
-      heroElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: linear-gradient(to right, #2563eb, #4338ca);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-      `;
-
-      heroElement.innerHTML = `
-        <div style="text-align: center; padding: 80px;">
-          <h1 style="font-size: 72px; font-weight: bold; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-            Minimum Spanning Tree
-          </h1>
-          <p style="font-size: 28px; margin-bottom: 60px; max-width: 1200px; line-height: 1.4; opacity: 0.9;">
-            Jelajahi dunia algoritma graf yang menakjubkan! Pelajari konsep MST, 
-            algoritma Kruskal dan Prim, serta implementasinya dalam kehidupan nyata 
-            melalui website interaktif ini.
-          </p>
-          <div style="display: flex; gap: 30px; justify-content: center;">
-            <div style="background: white; color: #2563eb; padding: 20px 40px; border-radius: 12px; font-weight: bold; font-size: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
-              📚 Mulai Belajar
-            </div>
-            <div style="border: 3px solid white; color: white; padding: 20px 40px; border-radius: 12px; font-weight: bold; font-size: 20px;">
-              📥 Download PPT
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(heroElement);
-      const heroImage = await html2canvas(heroElement, {
-        width: 1920,
-        height: 1080,
-        backgroundColor: null,
-      });
-      document.body.removeChild(heroElement);
-
       const slide1 = pptx.addSlide();
-      slide1.addImage({
-        data: heroImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide1.background = { fill: colors.primary };
+
+      // Hero title
+      slide1.addText("Minimum Spanning Tree", {
+        x: 0.5,
+        y: 2,
+        w: 12.33,
+        h: 1.5,
+        fontSize: 54,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Subtitle
+      slide1.addText("Website Pembelajaran Interaktif", {
+        x: 0.5,
+        y: 3.8,
+        w: 12.33,
+        h: 0.8,
+        fontSize: 28,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Description
+      slide1.addText(
+        "Jelajahi dunia algoritma graf yang menakjubkan!\nPelajari konsep MST, algoritma Kruskal dan Prim, serta implementasinya dalam kehidupan nyata",
+        {
+          x: 1,
+          y: 5,
+          w: 11.33,
+          h: 1.2,
+          fontSize: 18,
+          color: "FFFFFFCC",
+          align: "center",
+          fontFace: "Segoe UI",
+        }
+      );
+
+      // CTA Buttons simulation
+      addCard(slide1, 4, 6.5, 2.5, 0.6, colors.white);
+      slide1.addText("📚 Mulai Belajar", {
+        x: 4,
+        y: 6.5,
+        w: 2.5,
+        h: 0.6,
+        fontSize: 16,
+        bold: true,
+        color: colors.primary,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      slide1.addShape(pptx.ShapeType.rect, {
+        x: 6.8,
+        y: 6.5,
+        w: 2.5,
+        h: 0.6,
+        fill: "transparent",
+        line: { color: colors.white, width: 2 },
+      });
+      slide1.addText("📥 Download PPT", {
+        x: 6.8,
+        y: 6.5,
+        w: 2.5,
+        h: 0.6,
+        fontSize: 16,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
       });
 
       // ===============================
-      // SLIDE 2: Introduction Section
+      // SLIDE 2: DAFTAR ISI
       // ===============================
-      console.log("Creating introduction slide...");
-
-      const introElement = document.createElement("div");
-      introElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: white;
-        padding: 80px;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        box-sizing: border-box;
-      `;
-
-      introElement.innerHTML = `
-        <div style="text-align: center; margin-bottom: 60px;">
-          <div style="width: 80px; height: 80px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
-            <span style="color: white; font-size: 32px;">🎯</span>
-          </div>
-          <h2 style="font-size: 48px; font-weight: bold; color: #111827; margin-bottom: 20px;">
-            Pengantar Pembelajaran
-          </h2>
-          <p style="font-size: 20px; color: #6b7280; max-width: 1400px; margin: 0 auto; line-height: 1.6;">
-            Minimum Spanning Tree (MST) adalah salah satu konsep fundamental dalam teori graf yang memiliki aplikasi luas dalam berbagai bidang seperti jaringan komputer, sistem transportasi, dan infrastruktur. Website ini dirancang untuk memberikan pemahaman mendalam tentang MST melalui pendekatan interaktif dan visualisasi yang menarik.
-          </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 1400px; margin: 0 auto;">
-          <div style="text-align: center; padding: 40px; background: #dbeafe; border-radius: 16px;">
-            <div style="background: #3b82f6; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
-              <span style="color: white; font-size: 32px;">📚</span>
-            </div>
-            <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #1e40af;">Pembelajaran Interaktif</h3>
-            <p style="color: #1e40af; font-size: 16px; line-height: 1.5;">Materi disajikan dengan visualisasi dan simulasi yang memudahkan pemahaman konsep MST</p>
-          </div>
-          
-          <div style="text-align: center; padding: 40px; background: #dcfce7; border-radius: 16px;">
-            <div style="background: #22c55e; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
-              <span style="color: white; font-size: 32px;">⚡</span>
-            </div>
-            <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #166534;">Algoritma Praktis</h3>
-            <p style="color: #166534; font-size: 16px; line-height: 1.5;">Implementasi langsung algoritma Kruskal dan Prim dengan contoh kasus nyata</p>
-          </div>
-          
-          <div style="text-align: center; padding: 40px; background: #fef3c7; border-radius: 16px;">
-            <div style="background: #f59e0b; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
-              <span style="color: white; font-size: 32px;">🌍</span>
-            </div>
-            <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #92400e;">Aplikasi Real-World</h3>
-            <p style="color: #92400e; font-size: 16px; line-height: 1.5;">Studi kasus implementasi MST dalam sistem power grid dan infrastruktur</p>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(introElement);
-      const introImage = await html2canvas(introElement, {
-        width: 1920,
-        height: 1080,
-      });
-      document.body.removeChild(introElement);
-
       const slide2 = pptx.addSlide();
-      slide2.addImage({
-        data: introImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide2.background = { fill: colors.lightGray };
+
+      slide2.addText("📋 Daftar Isi", {
+        x: 0.5,
+        y: 0.5,
+        w: 12.33,
+        h: 1,
+        fontSize: 36,
+        bold: true,
+        color: colors.dark,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      const tableOfContents = [
+        "1. Pengertian Minimum Spanning Tree",
+        "2. Karakteristik dan Syarat MST",
+        "3. Overview Algoritma MST",
+        "4. Algoritma Kruskal",
+        "5. Algoritma Prim",
+        "6. Perbandingan Performance",
+        "7. Manfaat dan Aplikasi Real-World",
+        "8. Implementasi Power Grid System",
+        "9. Tim Pengembang",
+        "10. Kesimpulan dan Saran",
+      ];
+
+      tableOfContents.forEach((item, index) => {
+        const row = Math.floor(index / 2);
+        const col = index % 2;
+        const x = 1 + col * 5.5;
+        const y = 2 + row * 0.6;
+
+        slide2.addText(item, {
+          x: x,
+          y: y,
+          w: 5,
+          h: 0.5,
+          fontSize: 16,
+          color: colors.dark,
+          bullet: { type: "number" },
+          fontFace: "Segoe UI",
+        });
       });
 
       // ===============================
-      // SLIDE 3: Topics Section UI
+      // SLIDE 3: PENGERTIAN MST
       // ===============================
-      console.log("Creating topics slide...");
-
-      const topicsElement = document.createElement("div");
-      topicsElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: #f9fafb;
-        padding: 80px;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        box-sizing: border-box;
-      `;
-
-      topicsElement.innerHTML = `
-        <div style="text-align: center; margin-bottom: 60px;">
-          <h2 style="font-size: 48px; font-weight: bold; color: #111827; margin-bottom: 20px;">
-            Materi Pembelajaran
-          </h2>
-          <p style="font-size: 24px; color: #6b7280;">
-            Jelajahi berbagai topik MST yang telah disusun secara sistematis
-          </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1600px; margin: 0 auto;">
-          <div style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.3s;">
-            <div style="height: 120px; background: linear-gradient(to right, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-size: 48px;">📚</div>
-            </div>
-            <div style="padding: 30px;">
-              <h3 style="font-size: 22px; font-weight: bold; color: #111827; margin-bottom: 15px;">Pengertian & Karakteristik MST</h3>
-              <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Memahami konsep dasar dan syarat-syarat MST</p>
-            </div>
-          </div>
-          
-          <div style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
-            <div style="height: 120px; background: linear-gradient(to right, #10b981, #059669); display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-size: 48px;">⚙️</div>
-            </div>
-            <div style="padding: 30px;">
-              <h3 style="font-size: 22px; font-weight: bold; color: #111827; margin-bottom: 15px;">Algoritma Kruskal</h3>
-              <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Mempelajari algoritma Kruskal untuk mencari MST</p>
-            </div>
-          </div>
-          
-          <div style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
-            <div style="height: 120px; background: linear-gradient(to right, #8b5cf6, #7c3aed); display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-size: 48px;">⚡</div>
-            </div>
-            <div style="padding: 30px;">
-              <h3 style="font-size: 22px; font-weight: bold; color: #111827; margin-bottom: 15px;">Algoritma Prim</h3>
-              <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Memahami cara kerja algoritma Prim</p>
-            </div>
-          </div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 1200px; margin: 40px auto 0;">
-          <div style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
-            <div style="height: 120px; background: linear-gradient(to right, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-size: 48px;">📊</div>
-            </div>
-            <div style="padding: 30px;">
-              <h3 style="font-size: 22px; font-weight: bold; color: #111827; margin-bottom: 15px;">Perbandingan Algoritma</h3>
-              <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Kelebihan dan kekurangan masing-masing algoritma</p>
-            </div>
-          </div>
-          
-          <div style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
-            <div style="height: 120px; background: linear-gradient(to right, #dc2626, #b91c1c); display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-size: 48px;">🏭</div>
-            </div>
-            <div style="padding: 30px;">
-              <h3 style="font-size: 22px; font-weight: bold; color: #111827; margin-bottom: 15px;">Implementasi Power Grid</h3>
-              <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Penerapan MST dalam sistem jaringan listrik</p>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(topicsElement);
-      const topicsImage = await html2canvas(topicsElement, {
-        width: 1920,
-        height: 1080,
-      });
-      document.body.removeChild(topicsElement);
-
       const slide3 = pptx.addSlide();
-      slide3.addImage({
-        data: topicsImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide3.background = { fill: colors.white };
+
+      // Header with icon
+      addCard(slide3, 0.5, 0.3, 12.33, 1.2, colors.primary);
+      slide3.addText("📚 Pengertian Minimum Spanning Tree", {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1.2,
+        fontSize: 32,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Definition card
+      addCard(slide3, 1, 2, 11.33, 2);
+      slide3.addText("Definisi", {
+        x: 1.5,
+        y: 2.2,
+        w: 10.33,
+        h: 0.5,
+        fontSize: 20,
+        bold: true,
+        color: colors.primary,
+        fontFace: "Segoe UI",
+      });
+
+      slide3.addText(
+        "Minimum Spanning Tree (MST) adalah subgraf dari graf berbobot yang menghubungkan semua vertex dengan total bobot edge minimum, tanpa membentuk cycle (siklus).",
+        {
+          x: 1.5,
+          y: 2.8,
+          w: 10.33,
+          h: 1,
+          fontSize: 16,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        }
+      );
+
+      // Key points
+      addCard(slide3, 1, 4.5, 5.5, 2.5);
+      slide3.addText("🎯 Karakteristik Utama", {
+        x: 1.5,
+        y: 4.7,
+        w: 4.5,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.success,
+        fontFace: "Segoe UI",
+      });
+
+      const characteristics = [
+        "• Menghubungkan semua vertex",
+        "• Tidak ada cycle/siklus",
+        "• Jumlah edge = V - 1",
+        "• Total bobot minimum",
+      ];
+
+      characteristics.forEach((char, index) => {
+        slide3.addText(char, {
+          x: 1.5,
+          y: 5.3 + index * 0.4,
+          w: 4.5,
+          h: 0.3,
+          fontSize: 14,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // Applications preview
+      addCard(slide3, 7, 4.5, 5.33, 2.5);
+      slide3.addText("🌍 Aplikasi Umum", {
+        x: 7.5,
+        y: 4.7,
+        w: 4.33,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.warning,
+        fontFace: "Segoe UI",
+      });
+
+      const applications = [
+        "• Jaringan telekomunikasi",
+        "• Sistem distribusi listrik",
+        "• Perencanaan jalan raya",
+        "• Network clustering",
+      ];
+
+      applications.forEach((app, index) => {
+        slide3.addText(app, {
+          x: 7.5,
+          y: 5.3 + index * 0.4,
+          w: 4.33,
+          h: 0.3,
+          fontSize: 14,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
       });
 
       // ===============================
-      // SLIDE 4: Algorithm Comparison UI
+      // SLIDE 4: ALGORITMA KRUSKAL
       // ===============================
-      console.log("Creating comparison slide...");
-
-      const comparisonElement = document.createElement("div");
-      comparisonElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: white;
-        padding: 80px;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        box-sizing: border-box;
-      `;
-
-      comparisonElement.innerHTML = `
-        <div style="text-align: center; margin-bottom: 60px;">
-          <h2 style="font-size: 48px; font-weight: bold; color: #ea580c; margin-bottom: 20px;">
-            Perbandingan Algoritma
-          </h2>
-          <p style="font-size: 24px; color: #6b7280;">
-            Kruskal vs Prim - Pilih yang tepat untuk kebutuhan Anda
-          </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 50px; border-radius: 20px; border-left: 8px solid #22c55e;">
-            <div style="display: flex; align-items: center; margin-bottom: 30px;">
-              <div style="width: 70px; height: 70px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 25px;">
-                <span style="color: white; font-size: 28px; font-weight: bold;">K</span>
-              </div>
-              <h3 style="font-size: 36px; font-weight: bold; color: #166534;">Algoritma Kruskal</h3>
-            </div>
-            <ul style="list-style: none; padding: 0; font-size: 20px; color: #166534; line-height: 2.2;">
-              <li style="margin-bottom: 18px;">✅ Edge-based approach</li>
-              <li style="margin-bottom: 18px;">✅ Baik untuk Sparse Graph</li>
-              <li style="margin-bottom: 18px;">✅ Menggunakan Union-Find</li>
-              <li style="margin-bottom: 18px;">✅ Kompleksitas: O(E log E)</li>
-              <li style="margin-bottom: 18px;">✅ Implementasi sederhana</li>
-              <li style="margin-bottom: 18px;">✅ Cocok untuk graf tidak terhubung</li>
-            </ul>
-          </div>
-          
-          <div style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 50px; border-radius: 20px; border-left: 8px solid #a855f7;">
-            <div style="display: flex; align-items: center; margin-bottom: 30px;">
-              <div style="width: 70px; height: 70px; background: #a855f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 25px;">
-                <span style="color: white; font-size: 28px; font-weight: bold;">P</span>
-              </div>
-              <h3 style="font-size: 36px; font-weight: bold; color: #7c2d12;">Algoritma Prim</h3>
-            </div>
-            <ul style="list-style: none; padding: 0; font-size: 20px; color: #7c2d12; line-height: 2.2;">
-              <li style="margin-bottom: 18px;">✅ Vertex-based approach</li>
-              <li style="margin-bottom: 18px;">✅ Baik untuk Dense Graph</li>
-              <li style="margin-bottom: 18px;">✅ Menggunakan Priority Queue</li>
-              <li style="margin-bottom: 18px;">✅ Kompleksitas: O(V²) atau O(E log V)</li>
-              <li style="margin-bottom: 18px;">✅ Partial MST support</li>
-              <li style="margin-bottom: 18px;">✅ Memory efficient</li>
-            </ul>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(comparisonElement);
-      const comparisonImage = await html2canvas(comparisonElement, {
-        width: 1920,
-        height: 1080,
-      });
-      document.body.removeChild(comparisonElement);
-
       const slide4 = pptx.addSlide();
-      slide4.addImage({
-        data: comparisonImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide4.background = { fill: colors.success };
+
+      slide4.addText("🔧 Algoritma Kruskal", {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1,
+        fontSize: 36,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Steps
+      addCard(slide4, 1, 1.8, 5.5, 4.5, colors.white);
+      slide4.addText("📋 Langkah-langkah:", {
+        x: 1.3,
+        y: 2,
+        w: 4.9,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.success,
+        fontFace: "Segoe UI",
+      });
+
+      const kruskalSteps = [
+        "1. Sort semua edge berdasarkan bobot",
+        "2. Inisialisasi Union-Find structure",
+        "3. Untuk setiap edge (u,v):",
+        "   • Cek apakah u dan v terhubung",
+        "   • Jika tidak, tambahkan edge ke MST",
+        "   • Union set u dan v",
+        "4. Ulangi hingga V-1 edge terpilih",
+      ];
+
+      kruskalSteps.forEach((step, index) => {
+        slide4.addText(step, {
+          x: 1.5,
+          y: 2.6 + index * 0.4,
+          w: 4.5,
+          h: 0.35,
+          fontSize: 12,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // Advantages
+      addCard(slide4, 7, 1.8, 5.33, 4.5, colors.white);
+      slide4.addText("✅ Keunggulan:", {
+        x: 7.3,
+        y: 2,
+        w: 4.73,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.success,
+        fontFace: "Segoe UI",
+      });
+
+      const kruskalAdvantages = [
+        "• Mudah diimplementasikan",
+        "• Efisien untuk sparse graph",
+        "• Dapat handle disconnected graph",
+        "• Greedy approach yang optimal",
+        "• Parallelizable untuk large datasets",
+      ];
+
+      kruskalAdvantages.forEach((adv, index) => {
+        slide4.addText(adv, {
+          x: 7.5,
+          y: 2.6 + index * 0.4,
+          w: 4.33,
+          h: 0.35,
+          fontSize: 12,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
       });
 
       // ===============================
-      // SLIDE 5: Power Grid Implementation UI
+      // SLIDE 5: ALGORITMA PRIM
       // ===============================
-      console.log("Creating implementation slide...");
-
-      const implementationElement = document.createElement("div");
-      implementationElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: linear-gradient(135deg, #fef3c7, #fde68a);
-        padding: 80px;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        box-sizing: border-box;
-      `;
-
-      implementationElement.innerHTML = `
-        <div style="text-align: center; margin-bottom: 60px;">
-          <div style="font-size: 72px; margin-bottom: 20px;">🏭</div>
-          <h2 style="font-size: 48px; font-weight: bold; color: #dc2626; margin-bottom: 20px;">
-            Implementasi: Power Grid System
-          </h2>
-          <p style="font-size: 24px; color: #7c2d12;">
-            Penerapan MST dalam sistem jaringan distribusi listrik yang efisien
-          </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; max-width: 1600px; margin: 0 auto;">
-          <div style="background: white; padding: 45px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
-            <h3 style="font-size: 32px; font-weight: bold; color: #dc2626; margin-bottom: 30px; display: flex; align-items: center;">
-              <span style="margin-right: 15px;">💰</span> Manfaat Ekonomi
-            </h3>
-            <ul style="list-style: none; padding: 0; font-size: 20px; color: #374151; line-height: 1.8;">
-              <li style="margin-bottom: 18px; display: flex; align-items: center;">
-                <span style="margin-right: 12px;">📉</span> Minimisasi biaya infrastruktur (35-50% saving)
-              </li>
-              <li style="margin-bottom: 18px; display: flex; align-items: center;">
-                <span style="margin-right: 12px;">⚡</span> Optimasi jalur distribusi
-              </li>
-              <li style="margin-bottom: 18px; display: flex; align-items: center;">
-                <span style="margin-right: 12px;">🔒</span> Redundansi terkontrol
-              </li>
-              <li style="margin-bottom: 18px; display: flex; align-items: center;">
-                <span style="margin-right: 12px;">🔧</span> Efisiensi maintenance
-              </li>
-              <li style="margin-bottom: 18px; display: flex; align-items: center;">
-                <span style="margin-right: 12px;">📊</span> Real-time monitoring
-              </li>
-            </ul>
-          </div>
-          
-          <div style="background: white; padding: 45px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
-            <h3 style="font-size: 32px; font-weight: bold; color: #dc2626; margin-bottom: 30px; display: flex; align-items: center;">
-              <span style="margin-right: 15px;">🌍</span> Studi Kasus Global
-            </h3>
-            <div style="font-size: 18px; color: #374151; line-height: 1.8;">
-              <div style="background: #f0f9ff; padding: 25px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid #0ea5e9;">
-                <strong style="font-size: 20px;">🇮🇩 PLN Indonesia:</strong><br>
-                <span style="color: #0369a1;">Penghematan 2.1 triliun rupiah dengan implementasi MST smart grid</span>
-              </div>
-              <div style="background: #f0fdf4; padding: 25px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid #22c55e;">
-                <strong style="font-size: 20px;">🇪🇺 European Grid:</strong><br>
-                <span style="color: #166534;">40% pengurangan biaya transmisi regional</span>
-              </div>
-              <div style="background: #fefce8; padding: 25px; border-radius: 15px; border-left: 5px solid #eab308;">
-                <strong style="font-size: 20px;">🇺🇸 Smart Grid USA:</strong><br>
-                <span style="color: #a16207;">AI-powered MST optimization untuk 50 juta rumah</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(implementationElement);
-      const implementationImage = await html2canvas(implementationElement, {
-        width: 1920,
-        height: 1080,
-      });
-      document.body.removeChild(implementationElement);
-
       const slide5 = pptx.addSlide();
-      slide5.addImage({
-        data: implementationImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide5.background = { fill: colors.purple };
+
+      slide5.addText("⚡ Algoritma Prim", {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1,
+        fontSize: 36,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Steps
+      addCard(slide5, 1, 1.8, 5.5, 4.5, colors.white);
+      slide5.addText("📋 Langkah-langkah:", {
+        x: 1.3,
+        y: 2,
+        w: 4.9,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.purple,
+        fontFace: "Segoe UI",
+      });
+
+      const primSteps = [
+        "1. Pilih starting vertex sembarang",
+        "2. Inisialisasi priority queue",
+        "3. Tambahkan vertex ke MST",
+        "4. Update key adjacent vertices",
+        "5. Pilih vertex dengan key minimum",
+        "6. Ulangi hingga semua vertex",
+        "7. MST terbentuk dengan V-1 edges",
+      ];
+
+      primSteps.forEach((step, index) => {
+        slide5.addText(step, {
+          x: 1.5,
+          y: 2.6 + index * 0.4,
+          w: 4.5,
+          h: 0.35,
+          fontSize: 12,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // Advantages
+      addCard(slide5, 7, 1.8, 5.33, 4.5, colors.white);
+      slide5.addText("✅ Keunggulan:", {
+        x: 7.3,
+        y: 2,
+        w: 4.73,
+        h: 0.5,
+        fontSize: 18,
+        bold: true,
+        color: colors.purple,
+        fontFace: "Segoe UI",
+      });
+
+      const primAdvantages = [
+        "• Efisien untuk dense graph",
+        "• Memory efficient",
+        "• Progressive MST building",
+        "• Suitable untuk real-time",
+        "• Better cache performance",
+      ];
+
+      primAdvantages.forEach((adv, index) => {
+        slide5.addText(adv, {
+          x: 7.5,
+          y: 2.6 + index * 0.4,
+          w: 4.33,
+          h: 0.35,
+          fontSize: 12,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
       });
 
       // ===============================
-      // SLIDE 6: Team Section UI
+      // SLIDE 6: PERBANDINGAN PERFORMANCE
       // ===============================
-      console.log("Creating team slide...");
-
-      const teamElement = document.createElement("div");
-      teamElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: white;
-        padding: 80px;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        box-sizing: border-box;
-      `;
-
-      teamElement.innerHTML = `
-        <div style="text-align: center; margin-bottom: 60px;">
-          <div style="font-size: 72px; margin-bottom: 20px;">👥</div>
-          <h2 style="font-size: 48px; font-weight: bold; color: #2563eb; margin-bottom: 20px;">
-            Anggota Kelompok
-          </h2>
-          <p style="font-size: 24px; color: #6b7280;">
-            Tim pengembang website pembelajaran MST
-          </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 1400px; margin: 0 auto 40px;">
-          <div style="background: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 36px; font-weight: bold;">AR</div>
-            <h3 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 10px;">Ahmad Rizki</h3>
-            <p style="color: #6b7280; margin-bottom: 15px; font-size: 16px;">NPM: 2023001</p>
-            <span style="background: #dbeafe; color: #1e40af; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold;">Project Leader</span>
-          </div>
-          
-          <div style="background: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 36px; font-weight: bold;">SN</div>
-            <h3 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 10px;">Siti Nurhaliza</h3>
-            <p style="color: #6b7280; margin-bottom: 15px; font-size: 16px;">NPM: 2023002</p>
-            <span style="background: #dcfce7; color: #166534; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold;">Algorithm Specialist</span>
-          </div>
-          
-          <div style="background: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 36px; font-weight: bold;">BS</div>
-            <h3 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 10px;">Budi Santoso</h3>
-            <p style="color: #6b7280; margin-bottom: 15px; font-size: 16px;">NPM: 2023003</p>
-            <span style="background: #f3e8ff; color: #7c3aed; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold;">Frontend Developer</span>
-          </div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; max-width: 900px; margin: 0 auto 40px;">
-          <div style="background: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 36px; font-weight: bold;">DS</div>
-            <h3 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 10px;">Dewi Sartika</h3>
-            <p style="color: #6b7280; margin-bottom: 15px; font-size: 16px;">NPM: 2023004</p>
-            <span style="background: #fef3c7; color: #92400e; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold;">Content Writer</span>
-          </div>
-          
-          <div style="background: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 36px; font-weight: bold;">MF</div>
-            <h3 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 10px;">Muhammad Fadli</h3>
-            <p style="color: #6b7280; margin-bottom: 15px; font-size: 16px;">NPM: 2023005</p>
-            <span style="background: #fee2e2; color: #dc2626; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold;">UI/UX Designer</span>
-          </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 40px; padding: 40px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 20px;">
-          <p style="font-size: 20px; color: #0369a1; font-weight: 500;">
-            🎓 Dibuat dengan dedikasi untuk pembelajaran Minimum Spanning Tree
-          </p>
-        </div>
-      `;
-
-      document.body.appendChild(teamElement);
-      const teamImage = await html2canvas(teamElement, {
-        width: 1920,
-        height: 1080,
-      });
-      document.body.removeChild(teamElement);
-
       const slide6 = pptx.addSlide();
-      slide6.addImage({
-        data: teamImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide6.background = { fill: colors.white };
+
+      addCard(slide6, 0.5, 0.3, 12.33, 1.2, colors.warning);
+      slide6.addText("📊 Perbandingan Performance Algoritma", {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1.2,
+        fontSize: 32,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
       });
 
-      // ===============================
-      // SLIDE 7: Conclusion/Thank You Slide
-      // ===============================
-      console.log("Creating conclusion slide...");
+      // Performance comparison table
+      const perfData = [
+        ["Aspek", "Kruskal", "Prim"],
+        ["Time Complexity", "O(E log E)", "O(V²) / O(E log V)"],
+        ["Space Complexity", "O(V)", "O(V)"],
+        ["Best for", "Sparse Graph", "Dense Graph"],
+        ["Implementation", "Union-Find", "Priority Queue"],
+        ["Memory Access", "Edge-based", "Vertex-based"],
+      ];
 
-      const conclusionElement = document.createElement("div");
-      conclusionElement.style.cssText = `
-        width: 1920px;
-        height: 1080px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        text-align: center;
-        padding: 80px;
-        box-sizing: border-box;
-      `;
-
-      conclusionElement.innerHTML = `
-        <div style="font-size: 80px; margin-bottom: 30px;">🎉</div>
-        <h1 style="font-size: 64px; font-weight: bold; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-          Terima Kasih!
-        </h1>
-        <p style="font-size: 28px; margin-bottom: 50px; max-width: 1200px; line-height: 1.4; opacity: 0.9;">
-          Semoga website pembelajaran MST ini bermanfaat untuk pemahaman algoritma graf yang lebih mendalam
-        </p>
-        
-        <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 40px;">
-          <h3 style="font-size: 32px; font-weight: bold; margin-bottom: 25px;">💡 Key Takeaways</h3>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; font-size: 18px;">
-            <div>
-              <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
-              <p>Pemahaman konsep MST</p>
-            </div>
-            <div>
-              <div style="font-size: 24px; margin-bottom: 10px;">⚙️</div>
-              <p>Algoritma Kruskal & Prim</p>
-            </div>
-            <div>
-              <div style="font-size: 24px; margin-bottom: 10px;">🌐</div>
-              <p>Aplikasi Real-World</p>
-            </div>
-          </div>
-        </div>
-        
-        <div style="font-size: 20px; opacity: 0.8;">
-          🌟 Keep Learning, Keep Growing! 🌟
-        </div>
-      `;
-
-      document.body.appendChild(conclusionElement);
-      const conclusionImage = await html2canvas(conclusionElement, {
-        width: 1920,
-        height: 1080,
+      // Table header
+      perfData[0].forEach((header, colIndex) => {
+        const x = 1.5 + colIndex * 3.5;
+        addCard(slide6, x, 2, 3.3, 0.6, colors.primary);
+        slide6.addText(header, {
+          x: x,
+          y: 2,
+          w: 3.3,
+          h: 0.6,
+          fontSize: 16,
+          bold: true,
+          color: colors.white,
+          align: "center",
+          fontFace: "Segoe UI",
+        });
       });
-      document.body.removeChild(conclusionElement);
 
+      // Table rows
+      for (let row = 1; row < perfData.length; row++) {
+        perfData[row].forEach((cell, colIndex) => {
+          const x = 1.5 + colIndex * 3.5;
+          const y = 2.6 + (row - 1) * 0.6;
+          const bgColor = colIndex === 0 ? "F3F4F6" : colors.white;
+
+          addCard(slide6, x, y, 3.3, 0.6, bgColor);
+          slide6.addText(cell, {
+            x: x,
+            y: y,
+            w: 3.3,
+            h: 0.6,
+            fontSize: 12,
+            color: colors.dark,
+            align: "center",
+            fontFace: "Segoe UI",
+          });
+        });
+      }
+
+      // ===============================
+      // SLIDE 7: IMPLEMENTASI POWER GRID
+      // ===============================
       const slide7 = pptx.addSlide();
-      slide7.addImage({
-        data: conclusionImage.toDataURL(),
-        x: 0,
-        y: 0,
-        w: 13.33,
-        h: 7.5,
+      slide7.background = { fill: colors.warning };
+
+      slide7.addText("🏭 Implementasi Power Grid System", {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1,
+        fontSize: 32,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
       });
 
-      // Generate PPT file
-      console.log("Generating UI-based PowerPoint...");
-      await pptx.writeFile({ fileName: "MST_Learning_UI_Design.pptx" });
+      slide7.addText(
+        "Penerapan MST dalam sistem jaringan distribusi listrik yang efisien",
+        {
+          x: 0.5,
+          y: 1.4,
+          w: 12.33,
+          h: 0.6,
+          fontSize: 18,
+          color: "FFFFFFCC",
+          align: "center",
+          fontFace: "Segoe UI",
+        }
+      );
 
-      console.log("UI PowerPoint generated successfully!");
+      // Benefits section
+      addCard(slide7, 1, 2.5, 11.33, 4, colors.white);
+      slide7.addText("💰 Manfaat & Studi Kasus Global", {
+        x: 1.3,
+        y: 2.7,
+        w: 10.8,
+        h: 0.6,
+        fontSize: 20,
+        bold: true,
+        color: colors.warning,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      const benefits = [
+        "🇮🇩 PLN Indonesia: Penghematan 2.1 triliun rupiah dengan smart grid MST",
+        "🇪🇺 European Grid: 40% pengurangan biaya transmisi regional",
+        "🇺🇸 US Smart Grid: AI-powered MST optimization untuk 150 juta rumah",
+        "📉 Minimisasi biaya infrastruktur (35-50% saving)",
+        "⚡ Optimasi jalur distribusi dengan real-time monitoring",
+        "🔒 Redundansi terkontrol untuk reliability maksimal",
+      ];
+
+      benefits.forEach((benefit, index) => {
+        slide7.addText(benefit, {
+          x: 1.5,
+          y: 3.4 + index * 0.4,
+          w: 10.33,
+          h: 0.35,
+          fontSize: 14,
+          color: colors.dark,
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // ===============================
+      // SLIDE 8: TIM PENGEMBANG
+      // ===============================
+      const slide8 = pptx.addSlide();
+      slide8.background = { fill: colors.primary };
+
+      slide8.addText("👥 Tim Pengembang Website", {
+        x: 0.5,
+        y: 0.5,
+        w: 12.33,
+        h: 1,
+        fontSize: 32,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      slide8.addText(
+        "Tim profesional yang berdedikasi untuk pembelajaran MST",
+        {
+          x: 0.5,
+          y: 1.6,
+          w: 12.33,
+          h: 0.6,
+          fontSize: 16,
+          color: "FFFFFFCC",
+          align: "center",
+          fontFace: "Segoe UI",
+        }
+      );
+
+      // Team members
+      const teamMembers = [
+        {
+          name: "Ahmad Rizki",
+          npm: "2023001",
+          role: "Project Leader",
+          initial: "AR",
+          color: colors.primary,
+        },
+        {
+          name: "Siti Nurhaliza",
+          npm: "2023002",
+          role: "Algorithm Specialist",
+          initial: "SN",
+          color: colors.success,
+        },
+        {
+          name: "Budi Santoso",
+          npm: "2023003",
+          role: "Frontend Developer",
+          initial: "BS",
+          color: colors.purple,
+        },
+        {
+          name: "Dewi Sartika",
+          npm: "2023004",
+          role: "Content Writer",
+          initial: "DS",
+          color: colors.warning,
+        },
+        {
+          name: "Muhammad Fadli",
+          npm: "2023005",
+          role: "UI/UX Designer",
+          initial: "MF",
+          color: colors.danger,
+        },
+      ];
+
+      teamMembers.forEach((member, index) => {
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        const x = 1.5 + col * 3.8;
+        const y = 2.8 + row * 2.2;
+
+        // Member card
+        addCard(slide8, x, y, 3.3, 2, colors.white);
+
+        // Avatar circle
+        slide8.addShape(pptx.ShapeType.ellipse, {
+          x: x + 1.15,
+          y: y + 0.2,
+          w: 1,
+          h: 1,
+          fill: member.color,
+        });
+
+        slide8.addText(member.initial, {
+          x: x + 1.15,
+          y: y + 0.2,
+          w: 1,
+          h: 1,
+          fontSize: 20,
+          bold: true,
+          color: colors.white,
+          align: "center",
+          fontFace: "Segoe UI",
+        });
+
+        slide8.addText(member.name, {
+          x: x + 0.2,
+          y: y + 1.3,
+          w: 2.9,
+          h: 0.4,
+          fontSize: 14,
+          bold: true,
+          color: colors.dark,
+          align: "center",
+          fontFace: "Segoe UI",
+        });
+
+        slide8.addText(member.npm, {
+          x: x + 0.2,
+          y: y + 1.6,
+          w: 2.9,
+          h: 0.3,
+          fontSize: 11,
+          color: colors.gray,
+          align: "center",
+          fontFace: "Segoe UI",
+        });
+
+        // Role badge
+        slide8.addShape(pptx.ShapeType.rect, {
+          x: x + 0.3,
+          y: y + 1.95,
+          w: 2.7,
+          h: 0.3,
+          fill: member.color + "20",
+          line: { color: member.color, width: 1 },
+        });
+
+        slide8.addText(member.role, {
+          x: x + 0.3,
+          y: y + 1.95,
+          w: 2.7,
+          h: 0.3,
+          fontSize: 9,
+          bold: true,
+          color: member.color,
+          align: "center",
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // ===============================
+      // SLIDE 9: KESIMPULAN
+      // ===============================
+      const slide9 = pptx.addSlide();
+      slide9.background = { fill: "667EEA" };
+
+      slide9.addText("🎉 Kesimpulan & Takeaways", {
+        x: 0.5,
+        y: 0.5,
+        w: 12.33,
+        h: 1,
+        fontSize: 36,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // Key takeaways
+      addCard(slide9, 1, 2, 11.33, 3.5, "FFFFFF20");
+      slide9.addText("💡 Key Takeaways", {
+        x: 1.5,
+        y: 2.3,
+        w: 10.33,
+        h: 0.6,
+        fontSize: 24,
+        bold: true,
+        color: colors.white,
+        fontFace: "Segoe UI",
+      });
+
+      const takeaways = [
+        "🔍 MST adalah fundamental algoritma graf dengan aplikasi luas",
+        "⚙️ Kruskal & Prim masing-masing optimal untuk kondisi berbeda",
+        "🌍 Implementasi real-world memberikan value ekonomi signifikan",
+        "🚀 Teknologi modern membuka peluang optimasi lebih lanjut",
+        "📈 Pemahaman MST essential untuk computer science & engineering",
+      ];
+
+      takeaways.forEach((takeaway, index) => {
+        slide9.addText(takeaway, {
+          x: 1.8,
+          y: 3 + index * 0.5,
+          w: 9.8,
+          h: 0.4,
+          fontSize: 14,
+          color: colors.white,
+          fontFace: "Segoe UI",
+        });
+      });
+
+      // Call to action
+      addCard(slide9, 3, 6, 7.33, 1, colors.white);
+      slide9.addText("🌟 Keep Learning, Keep Growing! 🌟", {
+        x: 3,
+        y: 6,
+        w: 7.33,
+        h: 1,
+        fontSize: 20,
+        bold: true,
+        color: colors.primary,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      // ===============================
+      // SLIDE 10: TERIMA KASIH
+      // ===============================
+      const slide10 = pptx.addSlide();
+      slide10.background = { fill: colors.primary };
+
+      slide10.addText("🙏 Terima Kasih!", {
+        x: 0.5,
+        y: 2.5,
+        w: 12.33,
+        h: 1.5,
+        fontSize: 54,
+        bold: true,
+        color: colors.white,
+        align: "center",
+        fontFace: "Segoe UI",
+      });
+
+      slide10.addText(
+        "Semoga presentasi ini bermanfaat untuk\npemahaman Minimum Spanning Tree yang lebih mendalam",
+        {
+          x: 0.5,
+          y: 4.2,
+          w: 12.33,
+          h: 1.2,
+          fontSize: 20,
+          color: "FFFFFFCC",
+          align: "center",
+          fontFace: "Segoe UI",
+        }
+      );
+
+      slide10.addText(
+        "📧 Contact: mst-learning@university.edu\n🌐 Website: https://mst-learning.vercel.app",
+        {
+          x: 0.5,
+          y: 6,
+          w: 12.33,
+          h: 1,
+          fontSize: 14,
+          color: "FFFFFF99",
+          align: "center",
+          fontFace: "Segoe UI",
+        }
+      );
+
+      // Generate and download
+      console.log("Generating comprehensive MST PowerPoint...");
+      await pptx.writeFile({
+        fileName: "MST_Learning_Comprehensive_Presentation.pptx",
+      });
+
       alert(
-        "🎉 PowerPoint dengan desain UI website berhasil didownload!\n\nFile berisi 7 slide:\n• Hero section dengan gradient\n• Introduction dengan feature cards\n• Learning topics layout\n• Algorithm comparison\n• Power grid implementation\n• Team member showcase\n• Conclusion slide\n\nDesain sesuai dengan UI website Anda!"
+        "🎉 PowerPoint Comprehensive berhasil didownload!\n\n📋 Berisi 10 slide lengkap:\n\n✅ Slide 1: Title dengan UI design\n✅ Slide 2: Daftar Isi\n✅ Slide 3: Pengertian MST\n✅ Slide 4: Algoritma Kruskal\n✅ Slide 5: Algoritma Prim\n✅ Slide 6: Performance Comparison\n✅ Slide 7: Power Grid Implementation\n✅ Slide 8: Tim Pengembang\n✅ Slide 9: Kesimpulan\n✅ Slide 10: Terima Kasih\n\n🎨 Design Features:\n• Layout PowerPoint standar 16:9\n• Gradient background matching website\n• Professional cards & visual elements\n• Consistent color scheme\n• Typography yang readable\n• Shadow effects untuk depth\n\n💼 Siap untuk presentasi profesional!"
       );
     } catch (error) {
-      console.error("UI PPT conversion error:", error);
+      console.error("Comprehensive PPT generation error:", error);
       alert(
-        "❌ Gagal membuat PPT dengan UI design.\n\nKemungkinan penyebab:\n• Browser tidak support html2canvas\n• Memory insufficient\n• Library tidak terinstall\n\nPastikan:\n• npm install html2canvas pptxgenjs\n• Gunakan browser Chrome/Edge\n• Refresh halaman dan coba lagi"
+        `❌ Gagal membuat PowerPoint Comprehensive.\n\nError: ${error.message}\n\nSolusi:\n• Refresh halaman dan coba lagi\n• Pastikan internet connection stabil\n• Gunakan browser Chrome/Firefox terbaru\n• Disable adblockers sementara\n• Coba gunakan mode incognito`
       );
     } finally {
       setIsConverting(false);
     }
   };
 
-  // Data untuk komponen
+  if (!isClient) {
+    return <span className="text-white">Loading...</span>;
+  }
+
+  return (
+    <button
+      onClick={createComprehensivePPT}
+      disabled={isConverting}
+      className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 shadow-lg"
+    >
+      <Download size={20} />
+      <span>
+        {isConverting
+          ? "Generating Comprehensive PPT..."
+          : "Download Comprehensive PPT"}
+      </span>
+    </button>
+  );
+};
+
+// Dynamic import with SSR disabled
+const PPTGenerator = dynamic(() => Promise.resolve(ComprehensivePPTCreator), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center space-x-2 text-white">
+      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+      <span>Loading PPT Generator...</span>
+    </div>
+  ),
+});
+
+export default function Home() {
+  const [isConverting, setIsConverting] = useState(false);
+
   const teamMembers = [
     { name: "Ahmad Rizki", npm: "2023001", role: "Project Leader" },
     { name: "Siti Nurhaliza", npm: "2023002", role: "Algorithm Specialist" },
@@ -696,20 +1027,15 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section
-        id="hero-section"
-        className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20"
-      >
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-6 animate-fade-in">
-            Minimum Spanning Tree
-          </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto animate-slide-up">
+          <h1 className="text-5xl font-bold mb-6">Minimum Spanning Tree</h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto">
             Jelajahi dunia algoritma graf yang menakjubkan! Pelajari konsep MST,
             algoritma Kruskal dan Prim, serta implementasinya dalam kehidupan
             nyata melalui website interaktif ini.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/pengertian"
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-2"
@@ -718,22 +1044,16 @@ export default function Home() {
               <span>Mulai Belajar</span>
               <ChevronRight size={16} />
             </Link>
-            <button
-              onClick={handleConvertUIToPPT}
-              disabled={isConverting}
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50"
-            >
-              <Download size={20} />
-              <span>
-                {isConverting ? "Generating UI PPT..." : "Download UI PPT"}
-              </span>
-            </button>
+            <PPTGenerator
+              isConverting={isConverting}
+              setIsConverting={setIsConverting}
+            />
           </div>
         </div>
       </section>
 
       {/* Introduction Section */}
-      <section id="intro-section" className="py-16 bg-white">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Target className="mx-auto h-12 w-12 text-blue-600 mb-4" />
@@ -791,7 +1111,7 @@ export default function Home() {
       </section>
 
       {/* Topics Section */}
-      <section id="topics-section" className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -834,7 +1154,7 @@ export default function Home() {
       </section>
 
       {/* Team Section */}
-      <section id="team-section" className="py-16 bg-white">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Users className="mx-auto h-12 w-12 text-blue-600 mb-4" />
