@@ -19,7 +19,7 @@ export default function Perbandingan() {
       icon: Settings,
       color: "green",
       timeComplexity: "O(E log E)",
-      spaceComplexity: "O(V)",
+      spaceComplexity: "O(E + V)",
       approach: "Edge-based",
       dataStructure: "Union-Find (Disjoint Set)",
       advantages: [
@@ -45,8 +45,8 @@ export default function Perbandingan() {
       name: "Algoritma Prim",
       icon: Zap,
       color: "purple",
-      timeComplexity: "O(V²) atau O(E log V)",
-      spaceComplexity: "O(V)",
+      timeComplexity: "O(V²) atau O((E + V) log V)",
+      spaceComplexity: "O(E + V)",
       approach: "Vertex-based",
       dataStructure: "Priority Queue/Heap",
       advantages: [
