@@ -4,6 +4,67 @@ import { useState } from "react";
 import { Zap, Play, RotateCcw } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 import AlgorithmStep from "../components/AlgorithmStep";
+import TextEditor from "../components/TextEditor";
+
+const primCode = ` // Kode algoritma prim
+typedef pair<int, int> pii;
+int spanningTree(int V, int E, vector<vector<int>> &edges) {
+    vector<vector<int>> adj[V];
+    for (int i = 0; i < E; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        int wt = edges[i][2];
+        adj[u].push_back({v, wt});
+        adj[v].push_back({u, wt});
+    }
+    
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    
+    vector<bool> visited(V, false);
+    int res = 0;
+    
+    pq.push({0, 0});
+    while(!pq.empty()){
+        auto p = pq.top();
+        pq.pop();
+        
+        int wt = p.first;  
+        int u = p.second;  
+        
+        if(visited[u] == true){
+            continue;  
+        }
+        
+        res += wt;  
+        visited[u] = true;  
+        
+        
+        for(auto v : adj[u]){
+            if(visited[v[0]] == false){
+                pq.push({v[1], v[0]}); 
+            }
+        }
+    }
+    
+    return res;
+}
+`
+
+const mainCode = `// implementasi algoritma prim
+int main() {
+    vector<vector<int>> graph = {{0, 1, 7},
+                                {0, 3, 5},
+                                {0, 4, 6},
+                                {1, 3, 9},
+                                {1, 2, 8},
+                                {2, 3, 7},
+                                {2, 4, 5},
+                                {3, 4, 15}};
+    cout << spanningTree(5, 8, graph) << endl;
+
+    return 0;
+}
+`
 
 export default function Prim() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -96,8 +157,7 @@ export default function Prim() {
             Algoritma Prim
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Algoritma greedy yang membangun MST dengan menambahkan vertex satu
-            per satu melalui edge berbobot minimum
+            Algoritma Prim adalah algoritma greedy yang digunakan untuk mencari Minimum Spanning Tree (MST) dari sebuah graf berbobot dan terhubung. Algoritma ini dimulai dari satu simpul dan secara bertahap menambahkan sisi dengan bobot terkecil yang menghubungkan simpul yang sudah dikunjungi ke simpul yang belum dikunjungi.
           </p>
         </div>
 
@@ -136,7 +196,7 @@ export default function Prim() {
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-800 rounded-full flex items-center justify-center text-sm font-bold">
                     4
                   </span>
-                  <span>Tambahkan edge dan vertex baru ke MST</span>
+                  <span>Tambahkan edge dan vertex baru ke MST </span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-800 rounded-full flex items-center justify-center text-sm font-bold">
@@ -155,17 +215,17 @@ export default function Prim() {
                 <div>
                   <span className="font-medium">Time Complexity:</span>
                   <span className="ml-2 bg-purple-100 px-2 py-1 rounded text-sm">
-                    O(V²) atau O(E log V)
+                    O(V²) atau O((E + V) log V)
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Space Complexity:</span>
                   <span className="ml-2 bg-purple-100 px-2 py-1 rounded text-sm">
-                    O(V)
+                    O(E + V)
                   </span>
                 </div>
                 <p className="text-purple-700 text-sm mt-3">
-                  O(V²) dengan array, O(E log V) dengan priority queue (heap).
+                  O(V²) dengan array, O((E + V) log V) dengan priority queue (heap).
                   Lebih efisien untuk dense graph.
                 </p>
               </div>
@@ -332,6 +392,11 @@ export default function Prim() {
               </tbody>
             </table>
           </div>
+        </div>
+        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">Implementasi Algoritma Prim dalam C++</h1>
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <TextEditor cppCode={primCode} />
+          <TextEditor cppCode={mainCode} />
         </div>
       </div>
     </div>
