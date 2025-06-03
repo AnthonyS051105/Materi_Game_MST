@@ -34,7 +34,7 @@ export default function Layout({ children }) {
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <img src="/logo.png" alt="MST Logo" className="h-10 sm:h-12 md:h-14 lg:h-16 xl:h-18 2xl:h-18 w-auto" />
+                <img src="/logo.png" alt="MST Logo" className="h-8 sm:h-8 md:h-10 lg:h-12 xl:h-14 2xl:h-16 w-auto" />
               </Link>
             </div>
 
@@ -44,7 +44,7 @@ export default function Layout({ children }) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`text-white hover:text-[#FFCA7A] px-3 py-2 rounded-md transition-colors duration-200 text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl ${pixelifySans.className}`}
+                  className={`text-white hover:text-[#FFCA7A] px-3 py-2 rounded-md transition-colors duration-200 text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl ${pixelifySans.className}`}
                 >
                   <span>{item.name}</span>
                 </Link>
