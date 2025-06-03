@@ -1,3 +1,4 @@
+// FILE: src/app/game/page.js
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -16,10 +17,10 @@ import {
 export default function GamePage() {
   const router = useRouter();
   const [gameStarted, setGameStarted] = useState(false);
-  const [transformerCount, setTransformerCount] = useState(5);
-  const [transformers, setTransformers] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [selectedEdges, setSelectedEdges] = useState([]);
+  const [trafoCount, setTrafoCount] = useState(5);
+  const [trafos, setTrafos] = useState([]);
+  const [cables, setCables] = useState([]);
+  const [selectedCables, setSelectedCables] = useState([]);
   const [mst, setMst] = useState([]);
   const [mstWeight, setMstWeight] = useState(0);
   const [playerWeight, setPlayerWeight] = useState(0);
@@ -27,66 +28,75 @@ export default function GamePage() {
   const [showTransition, setShowTransition] = useState(true);
   const canvasRef = useRef(null);
 
-  // Transisi masuk ke dunia game
+  // Pixelify Sans font loading
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap";
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+  }, []);
+
+  // Transition effect
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowTransition(false);
-    }, 2000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Generate random transformers dalam area peta
-  const generateTransformers = (count) => {
-    const mapArea = {
-      x: 100,
-      y: 100,
-      width: 600,
-      height: 400,
-    };
+  // Map boundaries for trafo placement
+  const mapBounds = {
+    x: 50,
+    y: 50,
+    width: 700,
+    height: 500,
+  };
 
-    const newTransformers = [];
+  // Generate random trafos within map bounds
+  const generateTrafos = (count) => {
+    const newTrafos = [];
     for (let i = 0; i < count; i++) {
-      const x = mapArea.x + Math.random() * (mapArea.width - 60);
-      const y = mapArea.y + Math.random() * (mapArea.height - 60);
-      newTransformers.push({
+      const x = mapBounds.x + Math.random() * (mapBounds.width - 60);
+      const y = mapBounds.y + Math.random() * (mapBounds.height - 60);
+      newTrafos.push({
         id: String.fromCharCode(65 + i),
         x: x,
         y: y,
         selected: false,
       });
     }
-    return newTransformers;
+    return newTrafos;
   };
 
-  // Generate edges dengan random weights
-  const generateEdges = (transformers) => {
-    const newEdges = [];
-    for (let i = 0; i < transformers.length; i++) {
-      for (let j = i + 1; j < transformers.length; j++) {
+  // Generate cables with random weights based on distance
+  const generateCables = (trafos) => {
+    const newCables = [];
+    for (let i = 0; i < trafos.length; i++) {
+      for (let j = i + 1; j < trafos.length; j++) {
         const distance = Math.sqrt(
-          Math.pow(transformers[i].x - transformers[j].x, 2) +
-            Math.pow(transformers[i].y - transformers[j].y, 2)
+          Math.pow(trafos[i].x - trafos[j].x, 2) +
+            Math.pow(trafos[i].y - trafos[j].y, 2)
         );
         const weight =
-          Math.floor(distance / 10) + Math.floor(Math.random() * 20) + 1;
+          Math.floor(distance / 15) + Math.floor(Math.random() * 10) + 1;
 
-        newEdges.push({
-          from: transformers[i].id,
-          to: transformers[j].id,
+        newCables.push({
+          from: trafos[i].id,
+          to: trafos[j].id,
           weight: weight,
           selected: false,
         });
       }
     }
-    return newEdges;
+    return newCables;
   };
 
-  // Kruskal algorithm untuk mencari MST
+  // Kruskal algorithm for MST
   const findMSTKruskal = (vertices, edges) => {
     const parent = {};
     const rank = {};
 
-    // Initialize Union-Find
     vertices.forEach((v) => {
       parent[v.id] = v.id;
       rank[v.id] = 0;
@@ -116,7 +126,6 @@ export default function GamePage() {
       return true;
     };
 
-    // Sort edges by weight
     const sortedEdges = [...edges].sort((a, b) => a.weight - b.weight);
     const mstEdges = [];
     let totalWeight = 0;
@@ -133,59 +142,58 @@ export default function GamePage() {
   };
 
   const startGame = () => {
-    const newTransformers = generateTransformers(transformerCount);
-    const newEdges = generateEdges(newTransformers);
-    const { mstEdges, totalWeight } = findMSTKruskal(newTransformers, newEdges);
+    const newTrafos = generateTrafos(trafoCount);
+    const newCables = generateCables(newTrafos);
+    const { mstEdges, totalWeight } = findMSTKruskal(newTrafos, newCables);
 
-    setTransformers(newTransformers);
-    setEdges(newEdges);
+    setTrafos(newTrafos);
+    setCables(newCables);
     setMst(mstEdges);
     setMstWeight(totalWeight);
-    setSelectedEdges([]);
+    setSelectedCables([]);
     setPlayerWeight(0);
     setGameStarted(true);
     setGameFinished(false);
   };
 
-  const handleEdgeClick = (edge) => {
+  const handleCableClick = (cable) => {
     if (gameFinished) return;
 
-    const isSelected = selectedEdges.some(
-      (e) =>
-        (e.from === edge.from && e.to === edge.to) ||
-        (e.from === edge.to && e.to === edge.from)
+    const isSelected = selectedCables.some(
+      (c) =>
+        (c.from === cable.from && c.to === cable.to) ||
+        (c.from === cable.to && c.to === cable.from)
     );
 
     if (isSelected) {
-      setSelectedEdges(
-        selectedEdges.filter(
-          (e) =>
+      setSelectedCables(
+        selectedCables.filter(
+          (c) =>
             !(
-              (e.from === edge.from && e.to === edge.to) ||
-              (e.from === edge.to && e.to === edge.from)
+              (c.from === cable.from && c.to === cable.to) ||
+              (c.from === cable.to && c.to === cable.from)
             )
         )
       );
-      setPlayerWeight(playerWeight - edge.weight);
+      setPlayerWeight(playerWeight - cable.weight);
     } else {
-      setSelectedEdges([...selectedEdges, edge]);
-      setPlayerWeight(playerWeight + edge.weight);
+      setSelectedCables([...selectedCables, cable]);
+      setPlayerWeight(playerWeight + cable.weight);
     }
   };
 
   const submitAnswer = () => {
     setGameFinished(true);
     const isCorrect =
-      playerWeight === mstWeight &&
-      selectedEdges.length === transformerCount - 1;
+      playerWeight === mstWeight && selectedCables.length === trafoCount - 1;
 
-    // Store game data untuk halaman solusi
+    // Store game data for solution page
     sessionStorage.setItem(
       "gameData",
       JSON.stringify({
-        transformers,
-        edges,
-        selectedEdges,
+        trafos,
+        cables,
+        selectedCables,
         mst,
         mstWeight,
         playerWeight,
@@ -200,9 +208,9 @@ export default function GamePage() {
     sessionStorage.setItem(
       "gameData",
       JSON.stringify({
-        transformers,
-        edges,
-        selectedEdges: [],
+        trafos,
+        cables,
+        selectedCables: [],
         mst,
         mstWeight,
         playerWeight: 0,
@@ -214,7 +222,7 @@ export default function GamePage() {
     router.push("/game/solution");
   };
 
-  // Render game canvas
+  // Canvas drawing
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !gameStarted) return;
@@ -223,60 +231,94 @@ export default function GamePage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw map background
-    ctx.fillStyle = "#10B981";
-    ctx.fillRect(80, 80, 640, 440);
+    ctx.fillStyle = "#2D5016";
+    ctx.fillRect(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
 
-    ctx.fillStyle = "#065F46";
-    ctx.font = '16px "Press Start 2P"';
-    ctx.fillText("POWER GRID MAP", 300, 60);
+    // Map border
+    ctx.strokeStyle = "#8B4513";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
 
-    // Draw edges
-    edges.forEach((edge) => {
-      const fromNode = transformers.find((t) => t.id === edge.from);
-      const toNode = transformers.find((t) => t.id === edge.to);
+    // Draw grid pattern
+    ctx.strokeStyle = "#3D6B26";
+    ctx.lineWidth = 1;
+    for (let i = mapBounds.x; i <= mapBounds.x + mapBounds.width; i += 50) {
+      ctx.beginPath();
+      ctx.moveTo(i, mapBounds.y);
+      ctx.lineTo(i, mapBounds.y + mapBounds.height);
+      ctx.stroke();
+    }
+    for (let i = mapBounds.y; i <= mapBounds.y + mapBounds.height; i += 50) {
+      ctx.beginPath();
+      ctx.moveTo(mapBounds.x, i);
+      ctx.lineTo(mapBounds.x + mapBounds.width, i);
+      ctx.stroke();
+    }
 
-      if (!fromNode || !toNode) return;
+    // Draw title
+    ctx.fillStyle = "#FFD700";
+    ctx.font = 'bold 24px "Pixelify Sans", monospace';
+    ctx.textAlign = "center";
+    ctx.fillText("POWER GRID MAP", canvas.width / 2, 30);
 
-      const isSelected = selectedEdges.some(
-        (e) =>
-          (e.from === edge.from && e.to === edge.to) ||
-          (e.from === edge.to && e.to === edge.from)
+    // Draw cables
+    cables.forEach((cable) => {
+      const fromTrafo = trafos.find((t) => t.id === cable.from);
+      const toTrafo = trafos.find((t) => t.id === cable.to);
+
+      if (!fromTrafo || !toTrafo) return;
+
+      const isSelected = selectedCables.some(
+        (c) =>
+          (c.from === cable.from && c.to === cable.to) ||
+          (c.from === cable.to && c.to === cable.from)
       );
 
-      ctx.strokeStyle = isSelected ? "#DC2626" : "#6B7280";
-      ctx.lineWidth = isSelected ? 3 : 1;
-      ctx.setLineDash(isSelected ? [] : [5, 5]);
+      ctx.strokeStyle = isSelected ? "#FF4444" : "#666666";
+      ctx.lineWidth = isSelected ? 4 : 2;
+      ctx.setLineDash(isSelected ? [] : [8, 4]);
 
       ctx.beginPath();
-      ctx.moveTo(fromNode.x + 20, fromNode.y + 20);
-      ctx.lineTo(toNode.x + 20, toNode.y + 20);
+      ctx.moveTo(fromTrafo.x + 30, fromTrafo.y + 30);
+      ctx.lineTo(toTrafo.x + 30, toTrafo.y + 30);
       ctx.stroke();
 
-      // Draw weight
-      const midX = (fromNode.x + toNode.x) / 2 + 20;
-      const midY = (fromNode.y + toNode.y) / 2 + 20;
+      // Draw weight label
+      const midX = (fromTrafo.x + toTrafo.x) / 2 + 30;
+      const midY = (fromTrafo.y + toTrafo.y) / 2 + 30;
 
-      ctx.fillStyle = isSelected ? "#DC2626" : "#374151";
-      ctx.font = '12px "Press Start 2P"';
-      ctx.fillText(edge.weight.toString(), midX - 10, midY - 5);
+      ctx.fillStyle = isSelected ? "#FF4444" : "#333333";
+      ctx.font = 'bold 14px "Pixelify Sans", monospace';
+      ctx.textAlign = "center";
+      ctx.fillRect(midX - 15, midY - 10, 30, 20);
+      ctx.fillStyle = "white";
+      ctx.fillText(cable.weight.toString(), midX, midY + 5);
     });
 
-    // Draw transformers
-    transformers.forEach((transformer) => {
-      // Transformer body (simplified as rectangle)
-      ctx.fillStyle = "#1F2937";
-      ctx.fillRect(transformer.x, transformer.y, 40, 40);
+    // Draw trafos
+    trafos.forEach((trafo) => {
+      // Trafo body (simplified tower representation)
+      ctx.fillStyle = "#4A5568";
+      ctx.fillRect(trafo.x, trafo.y, 60, 60);
 
-      // Transformer details
-      ctx.fillStyle = "#FEF3C7";
-      ctx.fillRect(transformer.x + 5, transformer.y + 5, 30, 30);
+      // Trafo details
+      ctx.fillStyle = "#FFD700";
+      ctx.fillRect(trafo.x + 5, trafo.y + 5, 50, 50);
+
+      // Power symbol
+      ctx.fillStyle = "#1A202C";
+      ctx.font = 'bold 20px "Pixelify Sans", monospace';
+      ctx.textAlign = "center";
+      ctx.fillText("⚡", trafo.x + 30, trafo.y + 35);
 
       // Label
-      ctx.fillStyle = "#111827";
-      ctx.font = '14px "Press Start 2P"';
-      ctx.fillText(transformer.id, transformer.x + 15, transformer.y + 25);
+      ctx.fillStyle = "#1A202C";
+      ctx.font = 'bold 16px "Pixelify Sans", monospace';
+      ctx.fillText(trafo.id, trafo.x + 30, trafo.y + 50);
     });
-  }, [transformers, edges, selectedEdges, gameStarted]);
+
+    ctx.setLineDash([]);
+  }, [trafos, cables, selectedCables, gameStarted]);
 
   const handleCanvasClick = (event) => {
     if (!gameStarted || gameFinished) return;
@@ -286,25 +328,24 @@ export default function GamePage() {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // Check if click is on an edge
-    for (const edge of edges) {
-      const fromNode = transformers.find((t) => t.id === edge.from);
-      const toNode = transformers.find((t) => t.id === edge.to);
+    // Check if click is on a cable
+    for (const cable of cables) {
+      const fromTrafo = trafos.find((t) => t.id === cable.from);
+      const toTrafo = trafos.find((t) => t.id === cable.to);
 
-      if (!fromNode || !toNode) continue;
+      if (!fromTrafo || !toTrafo) continue;
 
-      // Simple distance check to edge line
       const dist = pointToLineDistance(
         x,
         y,
-        fromNode.x + 20,
-        fromNode.y + 20,
-        toNode.x + 20,
-        toNode.y + 20
+        fromTrafo.x + 30,
+        fromTrafo.y + 30,
+        toTrafo.x + 30,
+        toTrafo.y + 30
       );
 
-      if (dist < 10) {
-        handleEdgeClick(edge);
+      if (dist < 15) {
+        handleCableClick(cable);
         break;
       }
     }
@@ -342,18 +383,28 @@ export default function GamePage() {
     return Math.sqrt(dx * dx + dy * dy);
   };
 
+  // Transition screen
   if (showTransition) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-black flex items-center justify-center z-50">
         <div className="text-center">
-          <div className="text-6xl mb-8 animate-pulse">⚡</div>
-          <div className="text-white text-2xl mb-4 animate-fade-in font-mono">
+          <div className="text-8xl mb-8 animate-pulse">⚡</div>
+          <div
+            className="text-white text-4xl mb-6 animate-bounce"
+            style={{ fontFamily: '"Pixelify Sans", monospace' }}
+          >
             ENTERING POWER GRID DIMENSION...
           </div>
-          <div className="flex space-x-2 justify-center">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce"></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce delay-100"></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce delay-200"></div>
+          <div className="flex space-x-3 justify-center">
+            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce"></div>
+            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce delay-100"></div>
+            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce delay-200"></div>
+          </div>
+          <div
+            className="text-yellow-300 text-lg mt-8"
+            style={{ fontFamily: '"Pixelify Sans", monospace' }}
+          >
+            Loading transmission towers...
           </div>
         </div>
       </div>
@@ -361,60 +412,56 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-gray-900 text-white font-mono">
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white"
+      style={{ fontFamily: '"Pixelify Sans", monospace' }}
+    >
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1
-            className="text-4xl font-bold mb-4 text-green-400"
-            style={{ fontFamily: '"Press Start 2P", monospace' }}
-          >
+          <h1 className="text-5xl font-bold mb-4 text-yellow-400">
             MST POWER GRID GAME
           </h1>
-          <p className="text-green-300">
-            Connect transformers with minimum cable cost!
+          <p className="text-xl text-yellow-300">
+            Connect transmission towers with minimum cable cost!
           </p>
         </div>
 
         {!gameStarted ? (
           // Game Setup
-          <div className="max-w-md mx-auto bg-gray-800 rounded-lg p-8 border border-green-500">
-            <h2 className="text-2xl mb-6 text-center text-green-400">
+          <div className="max-w-md mx-auto bg-slate-800 rounded-lg p-8 border-2 border-yellow-500 shadow-lg">
+            <h2 className="text-3xl mb-6 text-center text-yellow-400">
               GAME SETUP
             </h2>
 
             <div className="mb-6">
-              <label className="block text-green-300 mb-2">
-                Number of Transformers:
+              <label className="block text-yellow-300 mb-4 text-lg">
+                Number of Transmission Towers:
               </label>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center space-x-4">
                 <button
-                  onClick={() =>
-                    setTransformerCount(Math.max(3, transformerCount - 1))
-                  }
-                  className="bg-red-600 hover:bg-red-700 p-2 rounded"
+                  onClick={() => setTrafoCount(Math.max(3, trafoCount - 1))}
+                  className="bg-red-600 hover:bg-red-700 p-3 rounded-lg transition-colors"
                 >
-                  <Minus size={16} />
+                  <Minus size={20} />
                 </button>
-                <span className="text-2xl text-green-400 w-12 text-center">
-                  {transformerCount}
+                <span className="text-3xl text-yellow-400 w-16 text-center font-bold">
+                  {trafoCount}
                 </span>
                 <button
-                  onClick={() =>
-                    setTransformerCount(Math.min(8, transformerCount + 1))
-                  }
-                  className="bg-green-600 hover:bg-green-700 p-2 rounded"
+                  onClick={() => setTrafoCount(Math.min(10, trafoCount + 1))}
+                  className="bg-green-600 hover:bg-green-700 p-3 rounded-lg transition-colors"
                 >
-                  <Plus size={16} />
+                  <Plus size={20} />
                 </button>
               </div>
             </div>
 
             <button
               onClick={startGame}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black py-4 px-6 rounded-lg flex items-center justify-center space-x-2 transition-all font-bold text-lg"
             >
-              <Play size={20} />
+              <Play size={24} />
               <span>START GAME</span>
             </button>
           </div>
@@ -423,86 +470,92 @@ export default function GamePage() {
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Game Canvas */}
             <div className="lg:col-span-3">
-              <div className="bg-gray-800 rounded-lg p-4 border border-green-500">
+              <div className="bg-slate-800 rounded-lg p-4 border-2 border-yellow-500 shadow-lg">
                 <canvas
                   ref={canvasRef}
                   width={800}
                   height={600}
-                  className="w-full border border-green-600 rounded cursor-pointer"
+                  className="w-full border-2 border-yellow-600 rounded cursor-pointer bg-slate-700"
                   onClick={handleCanvasClick}
                 />
               </div>
             </div>
 
             {/* Game Controls */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Score Panel */}
-              <div className="bg-gray-800 rounded-lg p-4 border border-green-500">
-                <h3 className="text-lg font-bold text-green-400 mb-3">SCORE</h3>
-                <div className="space-y-2 text-sm">
+              <div className="bg-slate-800 rounded-lg p-6 border-2 border-yellow-500 shadow-lg">
+                <h3 className="text-2xl font-bold text-yellow-400 mb-4">
+                  ⚡ POWER STATS
+                </h3>
+                <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span>Your Weight:</span>
-                    <span className="text-yellow-400">{playerWeight}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Target MST:</span>
-                    <span className="text-green-400">{mstWeight}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Edges Selected:</span>
-                    <span className="text-blue-400">
-                      {selectedEdges.length}
+                    <span className="text-yellow-300">Your Cable Cost:</span>
+                    <span className="text-yellow-400 font-bold text-xl">
+                      {playerWeight}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Required Edges:</span>
-                    <span className="text-blue-400">
-                      {transformerCount - 1}
+                    <span className="text-yellow-300">Target MST Cost:</span>
+                    <span className="text-green-400 font-bold text-xl">
+                      {mstWeight}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-yellow-300">Cables Selected:</span>
+                    <span className="text-blue-400 font-bold">
+                      {selectedCables.length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-yellow-300">Required Cables:</span>
+                    <span className="text-blue-400 font-bold">
+                      {trafoCount - 1}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Instructions */}
-              <div className="bg-gray-800 rounded-lg p-4 border border-green-500">
-                <h3 className="text-lg font-bold text-green-400 mb-3">
-                  INSTRUCTIONS
+              <div className="bg-slate-800 rounded-lg p-6 border-2 border-yellow-500 shadow-lg">
+                <h3 className="text-xl font-bold text-yellow-400 mb-4">
+                  📋 MISSION
                 </h3>
-                <ul className="text-xs space-y-1 text-green-300">
-                  <li>• Click on cables to select/deselect</li>
-                  <li>• Connect all transformers</li>
-                  <li>• Use minimum total cable weight</li>
-                  <li>• Selected cables turn red</li>
+                <ul className="text-sm space-y-2 text-yellow-300">
+                  <li>🎯 Click cables to select/deselect</li>
+                  <li>⚡ Connect all towers</li>
+                  <li>💰 Use minimum total cable cost</li>
+                  <li>🔴 Selected cables turn red</li>
+                  <li>🏆 Perfect score = MST solution</li>
                 </ul>
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <button
                   onClick={submitAnswer}
                   disabled={
-                    gameFinished ||
-                    selectedEdges.length !== transformerCount - 1
+                    gameFinished || selectedCables.length !== trafoCount - 1
                   }
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 font-bold transition-all"
                 >
-                  <CheckCircle size={16} />
-                  <span>SUBMIT</span>
+                  <CheckCircle size={20} />
+                  <span>SUBMIT SOLUTION</span>
                 </button>
 
                 <button
                   onClick={surrenderGame}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 font-bold transition-all"
                 >
-                  <Flag size={16} />
+                  <Flag size={20} />
                   <span>SURRENDER</span>
                 </button>
 
                 <button
                   onClick={startGame}
-                  className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 font-bold transition-all"
                 >
-                  <RotateCcw size={16} />
+                  <RotateCcw size={20} />
                   <span>NEW GAME</span>
                 </button>
               </div>
