@@ -46,7 +46,7 @@ export default function TextEditor({cppCode}) {
 
     const timeout = setTimeout(() => {
       setVisibleLength((prev) => prev + 1);
-    }, 30); // Adjust speed here
+    }, 3); // Adjust speed here
 
     return () => clearTimeout(timeout);
   }, [hasAnimated, visibleLength]);

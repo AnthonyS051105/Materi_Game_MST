@@ -5,8 +5,9 @@ import { Zap, Play, RotateCcw } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 import AlgorithmStep from "../components/AlgorithmStep";
 import TextEditor from "../components/TextEditor";
+import PseudoText from "../components/Pseudocode"
 
-const primCode = ` // Kode algoritma prim
+const primCode = `// Kode algoritma prim
 typedef pair<int, int> pii;
 int spanningTree(int V, int E, vector<vector<int>> &edges) {
     vector<vector<int>> adj[V];
@@ -19,10 +20,8 @@ int spanningTree(int V, int E, vector<vector<int>> &edges) {
     }
     
     priority_queue<pii, vector<pii>, greater<pii>> pq;
-    
     vector<bool> visited(V, false);
     int res = 0;
-    
     pq.push({0, 0});
     while(!pq.empty()){
         auto p = pq.top();
@@ -30,22 +29,18 @@ int spanningTree(int V, int E, vector<vector<int>> &edges) {
         
         int wt = p.first;  
         int u = p.second;  
-        
         if(visited[u] == true){
             continue;  
         }
-        
+
         res += wt;  
         visited[u] = true;  
-        
-        
         for(auto v : adj[u]){
             if(visited[v[0]] == false){
                 pq.push({v[1], v[0]}); 
             }
         }
     }
-    
     return res;
 }
 `
@@ -64,6 +59,28 @@ int main() {
 
     return 0;
 }
+`
+
+const primPseudoCode = `FUNCTION spanning Tree (V, E, edges): 
+  adj = ARRAY[V] OF LISTS 
+  FOR 1 FROM 0 TO E-1: 
+    u, v, wt edges[i][8], edges[i][1], edges[i][2] 
+    adj [u].ADD((v, wt)) 
+    adj[v].ADD((u, wt)) 
+  pq = MIN-HEAP OF (weight, node) PAIRS 
+  visited = ARRAY [V] INITIALIZED TO False 
+  res = 0 
+  pq.PUSH((0, 0)) 
+  WHILE NOT pq. EMPTY(): 
+    wt, u = pq.POP() 
+    IF visited[u]: 
+      CONTINUE 
+    res += wt 
+    visited[u] = True 
+    FOR (v, edge_wt) IN adj[u]: 
+      IF NOT visited[v]: 
+        pq.PUSH((edge_wt, v)) 
+  RETURN res 
 `
 
 export default function Prim() {
@@ -392,6 +409,10 @@ export default function Prim() {
               </tbody>
             </table>
           </div>
+        </div>
+        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">Pseudocode Algoritma Kruskal</h1>
+        <div className="flex justify-center items-center pt-2">
+          <PseudoText pseudoCode={primPseudoCode} />
         </div>
         <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">Implementasi Algoritma Prim dalam C++</h1>
         <div className="grid lg:grid-cols-2 gap-8 mb-8">

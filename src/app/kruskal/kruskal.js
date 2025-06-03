@@ -5,6 +5,7 @@ import { Play, Pause, RotateCcw, Settings } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 import AlgorithmStep from "../components/AlgorithmStep";
 import TextEditor from "../components/TextEditor"
+import PseudoText from "../components/Pseudocode";
 
 const edgeCode = `// Kode structure Edge
 struct Edge {
@@ -91,6 +92,15 @@ int main() {
 
     return 0;
 }
+`
+
+const kruskalPseudoCode = `FUNCTION kruskal(n, edges):
+  SORT(edges by weight)
+  uf = UnionFind(n), mst=[], weight=0
+  FOR edge IN edges:
+    IF uf.unite(edge.u, edge.v):
+      mst.add(edge), weight += edge.weight
+  RETURN (mst, weight)
 `
 
 export default function Kruskal() {
@@ -360,6 +370,11 @@ export default function Kruskal() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <h1 className="text-2xl font-bold mb-6 text-green-800 pt-4 pb-2">Pseudocode Algoritma Kruskal</h1>
+        <div className="flex justify-center items-center pt-2">
+          <PseudoText pseudoCode={kruskalPseudoCode} />
         </div>
         <h1 className="text-2xl font-bold mb-6 text-green-800 pt-4 pb-2">Implementasi Algoritma Kruskal dalam C++</h1>
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
