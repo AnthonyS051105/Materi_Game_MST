@@ -10,10 +10,22 @@ import {
   Zap,
   Code,
   Globe,
+  ChevronLeft, // Import ChevronLeft for previous button
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Pixelify_Sans } from 'next/font/google';
+import { Pixelify_Sans, Play, Podkova } from 'next/font/google';
+import Image from "next/image"; // Import Image component
+
+const play = Play({
+  subsets: ["latin"],
+  weight: "700", // Assuming a bold weight for "MEET OUR TEAM"
+});
+
+const podkova = Podkova({
+  subsets: ["latin"],
+  weight: "400", // Assuming a regular weight for "design by"
+});
 
 const pixelifySans = Pixelify_Sans({
   subsets: ['latin'],
@@ -706,7 +718,7 @@ const ComprehensivePPTCreator = ({ isConverting, setIsConverting }) => {
       );
 
       // Team members
-      const teamMembers = [
+      const teamMembersPPT = [
         {
           name: "Ahmad Rizki",
           npm: "2023001",
@@ -744,7 +756,7 @@ const ComprehensivePPTCreator = ({ isConverting, setIsConverting }) => {
         },
       ];
 
-      teamMembers.forEach((member, index) => {
+      teamMembersPPT.forEach((member, index) => {
         const row = Math.floor(index / 3);
         const col = index % 3;
         const x = 1.5 + col * 3.8;
@@ -981,16 +993,61 @@ const PPTGenerator = dynamic(() => Promise.resolve(ComprehensivePPTCreator), {
   ),
 });
 
+const MeetOurTeamSection = () => {
+  return (
+    <section className="py-8 bg-[#F8F8F8]"> {/* Background color to match image */}
+      <div className="max-w-10xl mx-auto px-8 sm:px-10 lg:px-12 grid grid-cols-1 md:grid-cols-[1fr_20fr] gap-4 items-center">
+        {/* Text Content (Left) */}
+        <div className="text-center md:text-left">
+          <h2 className={`text-8xl text-gray-800 mb-2 md:mb-4 ${play.className}`}>
+            MEET
+            <br />
+            OUR
+            <br />
+            TEAM
+          </h2>
+          <p className={`text-sm text-gray-500 mt-2 ${podkova.className}`}>
+            design by - MST Group (Information Engineering)
+          </p>
+        </div>
+
+        {/* Image (Right, expanded and shaped) */}
+        {/* Container for the image to apply the oval/capsule shape and shadow */}
+        <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[750px] overflow-hidden rounded-full shadow-xl">
+          <Image
+            src="/FotoKelompok.png" // Pastikan gambar ini ada di folder `public` Anda
+            alt="Our Team"
+            layout="fill" // Mengisi penuh kontainer parent
+            objectFit="cover" // Memastikan gambar menutupi area kontainer tanpa distorsi
+          />
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export default function Home() {
   const [isConverting, setIsConverting] = useState(false);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0); // New state for slider
 
   const teamMembers = [
-    { name: "Ahmad Rizki", npm: "2023001", role: "Project Leader" },
-    { name: "Siti Nurhaliza", npm: "2023002", role: "Algorithm Specialist" },
-    { name: "Budi Santoso", npm: "2023003", role: "Frontend Developer" },
-    { name: "Dewi Sartika", npm: "2023004", role: "Content Writer" },
-    { name: "Muhammad Fadli", npm: "2023005", role: "UI/UX Designer" },
+    { name: "Nathanael Satya Saputra", npm: "24/534424/TK/59236", role: "Project Leader" },
+    { name: "Muhammad Nafal Zakin Rustanto", npm: "24/535255/TK/59364", role: "Algorithm Specialist" },
+    { name: "Yohanes Anthony Saputra", npm: "24/536237/TK/59524", role: "Frontend Developer" },
+    { name: "Faiz Gymnastiar Wibawa", npm: "24/537851/TK/59634", role: "Content Writer" },
+    { name: "Muhammad Fachri Akbar", npm: "24/538155/TK/59679", role: "UI/UX Designer" },
+    { name: "Aston Hugo", npm: "24/538303/TK/59700", role: "Backend Developer" },
+    { name: "Ahmad Maulana Ibrahim", npm: "24/539655/TK/59853", role: "Researcher" },
+    { name: "Johannes De De Dimas Aryobimo", npm: "24/540351/TK/59948", role: "Researcher" },
+    { name: "Muhammad Falah Aufa Anggara", npm: "24/540500/TK/59995", role: "Documentation" },
+    { name: "Farand Hafiz", npm: "24/540618/TK/60027", role: "Documentation" },
+    { name: "Juan Eleanor Gabriel Sihotang", npm: "24/542016/TK/60194", role: "Researcher" },
+    { name: "Natanael Sebastian Simanjuntak", npm: "24/542676/TK/60273", role: "Researcher" },
+    { name: "Josiah Hermes", npm: "24/543958/TK/60463", role: "Quality Assurance" },
+    { name: "Juan Christopher Reinaldo Sipayung", npm: "24/544528/TK/60526", role: "Quality Assurance" },
+    { name: "Bagas Adjie Pamungkas", npm: "24/544718/TK/60547", role: "Quality Assurance" },
   ];
+
 
   const topics = [
     {
@@ -1028,23 +1085,54 @@ export default function Home() {
       color: "from-red-500 to-red-600",
       icon: <Globe size={32} />,
     },
+    // Add more topics here to see the slider in action if needed
+    // {
+    //   title: "Advanced MST Topics",
+    //   description: "Exploring more complex aspects of MST",
+    //   href: "/advanced",
+    //   color: "from-indigo-500 to-indigo-600",
+    //   icon: <BookOpen size={32} />,
+    // },
+    // {
+    //   title: "MST in Machine Learning",
+    //   description: "How MST is used in data clustering and ML",
+    //   href: "/ml-mst",
+    //   color: "from-pink-500 to-pink-600",
+    //   icon: <Code size={32} />,
+    // },
   ];
+
+  const topicsPerPage = 3; // Number of topics to show per slide
+  const totalSlides = Math.ceil(topics.length / topicsPerPage);
+
+  const handleNextSlide = () => {
+    setCurrentSlideIndex((prevIndex) => Math.min(prevIndex + 1, totalSlides - 1));
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlideIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const startIndex = currentSlideIndex * topicsPerPage;
+  const visibleTopics = topics.slice(startIndex, startIndex + topicsPerPage);
+
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
+
+      {/* Meet Our Team Section */}
+      <MeetOurTeamSection />
+
+      {/* Call to Action and Main Title Section */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className={`text-5xl font-bold mb-6 ${pixelifySans.className}`}>Minimum Spanning Tree</h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Jelajahi dunia algoritma graf yang menakjubkan! Pelajari konsep MST,
-            algoritma Kruskal dan Prim, serta implementasinya dalam kehidupan
-            nyata melalui website interaktif ini.
-          </p>
+          <h2 className={`text-4xl font-bold text-gray-900 mb-8 ${pixelifySans.className}`}>
+            Minimum Spanning Tree
+          </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/pengertian"
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-2"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg"
             >
               <BookOpen size={20} />
               <span>Mulai Belajar</span>
@@ -1058,109 +1146,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Introduction Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <Target className="mx-auto h-12 w-12 text-blue-600 mb-4" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Pengantar Pembelajaran
-            </h2>
-            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              Minimum Spanning Tree (MST) adalah salah satu konsep fundamental
-              dalam teori graf yang memiliki aplikasi luas dalam berbagai bidang
-              seperti jaringan komputer, sistem transportasi, dan infrastruktur.
-              Website ini dirancang untuk memberikan pemahaman mendalam tentang
-              MST melalui pendekatan interaktif dan visualisasi yang menarik.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-blue-50 rounded-lg">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Pembelajaran Interaktif
-              </h3>
-              <p className="text-gray-600">
-                Materi disajikan dengan visualisasi dan simulasi yang memudahkan
-                pemahaman konsep MST
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-green-50 rounded-lg">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Algoritma Praktis</h3>
-              <p className="text-gray-600">
-                Implementasi langsung algoritma Kruskal dan Prim dengan contoh
-                kasus nyata
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-yellow-50 rounded-lg">
-              <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="h-8 w-8 text-yellow-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Aplikasi Real-World
-              </h3>
-              <p className="text-gray-600">
-                Studi kasus implementasi MST dalam sistem power grid dan
-                infrastruktur
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Topics Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Materi Pembelajaran
-            </h2>
-            <p className="text-lg text-gray-600">
-              Jelajahi berbagai topik MST yang telah disusun secara sistematis
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topics.map((topic, index) => (
-              <Link
-                key={index}
-                href={topic.href}
-                className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <div
-                  className={`h-32 bg-gradient-to-r ${topic.color} flex items-center justify-center text-white`}
-                >
-                  {topic.icon}
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {topic.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{topic.description}</p>
-                  <div className="flex items-center text-blue-600 font-medium">
-                    <span>Pelajari Sekarang</span>
-                    <ChevronRight
-                      size={16}
-                      className="ml-1 group-hover:translate-x-1 transition-transform"
-                    />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Team Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Users className="mx-auto h-12 w-12 text-blue-600 mb-4" />
@@ -1176,29 +1163,80 @@ export default function Home() {
             {teamMembers.map((member, index) => (
               <div
                 key={index}
-                className="bg-gray-50 p-6 rounded-lg text-center border-2 border-gray-200 hover:border-blue-300 transition-colors"
+                className="bg-white p-6 rounded-lg text-center border-2 border-gray-200 hover:border-blue-300 transition-colors shadow-sm"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-xl font-bold">
-                  {member.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
                   {member.name}
                 </h3>
                 <p className="text-gray-600 mb-2">{member.npm}</p>
-                <span className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
-                  {member.role}
-                </span>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
-            <p className="text-lg text-blue-700 font-medium">
-              🎓 Dibuat dengan dedikasi untuk pembelajaran Minimum Spanning Tree
+      {/* Topics Section (Modified for Slider) */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Materi Pembelajaran
+            </h2>
+            <p className="text-lg text-gray-600">
+              Jelajahi berbagai topik MST yang telah disusun secara sistematis
             </p>
+          </div>
+
+          <div className="relative">
+            {/* Slider Content */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden">
+              {visibleTopics.map((topic, index) => (
+                <Link
+                  key={index}
+                  href={topic.href}
+                  className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div
+                    className={`h-32 bg-gradient-to-r ${topic.color} flex items-center justify-center text-white`}
+                  >
+                    {topic.icon}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {topic.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{topic.description}</p>
+                    <div className="flex items-center text-blue-600 font-medium">
+                      <span>Pelajari Sekarang</span>
+                      <ChevronRight
+                        size={16}
+                        className="ml-1 group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            {topics.length > topicsPerPage && ( // Only show buttons if there are more topics than can fit on one slide
+              <>
+                <button
+                  onClick={handlePrevSlide}
+                  disabled={currentSlideIndex === 0}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 bg-blue-600 text-white p-2 rounded-full shadow-lg opacity-75 hover:opacity-100 disabled:opacity-30 transition-opacity"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={handleNextSlide}
+                  disabled={currentSlideIndex === totalSlides - 1}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-blue-600 text-white p-2 rounded-full shadow-lg opacity-75 hover:opacity-100 disabled:opacity-30 transition-opacity"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
