@@ -1,4 +1,4 @@
-// FILE: src/app/game/solution/page.js
+// FILE: src/app/game/solution/solution.js
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -20,11 +20,11 @@ export default function SolutionPage() {
   const [primSteps, setPrimSteps] = useState([]);
   const canvasRef = useRef(null);
 
-  // Load Pixelify Sans font
+  // Load Press Start 2P font
   useEffect(() => {
     const link = document.createElement("link");
     link.href =
-      "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap";
+      "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
   }, []);
@@ -152,22 +152,42 @@ export default function SolutionPage() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const mapBounds = { x: 25, y: 25, width: 350, height: 250 };
+    // Calculate bounds of all trafos to properly scale
+    const minX = Math.min(...gameData.trafos.map((t) => t.x));
+    const maxX = Math.max(...gameData.trafos.map((t) => t.x));
+    const minY = Math.min(...gameData.trafos.map((t) => t.y));
+    const maxY = Math.max(...gameData.trafos.map((t) => t.y));
+
+    const originalWidth = maxX - minX;
+    const originalHeight = maxY - minY;
+
+    // Canvas dimensions
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    // Calculate padding and scale to fit properly
+    const padding = 40;
+    const availableWidth = canvasWidth - 2 * padding;
+    const availableHeight = canvasHeight - 2 * padding;
+
+    const scaleX = originalWidth > 0 ? availableWidth / originalWidth : 1;
+    const scaleY = originalHeight > 0 ? availableHeight / originalHeight : 1;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down if needed
 
     // Draw map background
     ctx.fillStyle = "#2D5016";
-    ctx.fillRect(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // Map border
     ctx.strokeStyle = "#8B4513";
     ctx.lineWidth = 2;
-    ctx.strokeRect(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+    ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
 
-    // Scale trafos to fit smaller canvas
+    // Scale and center trafos
     const scaledTrafos = gameData.trafos.map((trafo) => ({
       ...trafo,
-      x: (trafo.x - 50) * 0.5 + mapBounds.x,
-      y: (trafo.y - 50) * 0.5 + mapBounds.y,
+      x: padding + (trafo.x - minX) * scale,
+      y: padding + (trafo.y - minY) * scale,
     }));
 
     // Draw all cables (dim)
@@ -177,9 +197,9 @@ export default function SolutionPage() {
 
       if (!fromTrafo || !toTrafo) return;
 
-      ctx.strokeStyle = "#444444";
+      ctx.strokeStyle = "#666666";
       ctx.lineWidth = 1;
-      ctx.setLineDash([3, 3]);
+      ctx.setLineDash([4, 4]);
 
       ctx.beginPath();
       ctx.moveTo(fromTrafo.x + 15, fromTrafo.y + 15);
@@ -187,7 +207,7 @@ export default function SolutionPage() {
       ctx.stroke();
     });
 
-    // Draw MST cables (bright)
+    // Draw MST cables (bright green)
     gameData.mst.forEach((cable) => {
       const fromTrafo = scaledTrafos.find((t) => t.id === cable.from);
       const toTrafo = scaledTrafos.find((t) => t.id === cable.to);
@@ -195,7 +215,7 @@ export default function SolutionPage() {
       if (!fromTrafo || !toTrafo) return;
 
       ctx.strokeStyle = "#00FF00";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
       ctx.setLineDash([]);
 
       ctx.beginPath();
@@ -203,45 +223,67 @@ export default function SolutionPage() {
       ctx.lineTo(toTrafo.x + 15, toTrafo.y + 15);
       ctx.stroke();
 
-      // Draw weight
+      // Draw weight with better visibility
       const midX = (fromTrafo.x + toTrafo.x) / 2 + 15;
       const midY = (fromTrafo.y + toTrafo.y) / 2 + 15;
 
+      // Background for weight label
+      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+      ctx.fillRect(midX - 12, midY - 8, 24, 16);
+
+      // Border for weight label
+      ctx.strokeStyle = "#00FF00";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(midX - 12, midY - 8, 24, 16);
+
+      // Weight text
       ctx.fillStyle = "#00FF00";
-      ctx.font = 'bold 10px "Pixelify Sans", monospace';
+      ctx.font = 'bold 10px "Press Start 2P", monospace';
       ctx.textAlign = "center";
-      ctx.fillRect(midX - 8, midY - 6, 16, 12);
-      ctx.fillStyle = "black";
       ctx.fillText(cable.weight.toString(), midX, midY + 3);
     });
 
-    // Draw trafos
+    // Draw trafos (transformers)
     scaledTrafos.forEach((trafo) => {
+      // Shadow
+      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+      ctx.fillRect(trafo.x + 3, trafo.y + 3, 30, 30);
+
+      // Main trafo body (dark gray)
       ctx.fillStyle = "#4A5568";
       ctx.fillRect(trafo.x, trafo.y, 30, 30);
 
+      // Smaller inner yellow part (reduced size)
       ctx.fillStyle = "#FFD700";
-      ctx.fillRect(trafo.x + 2, trafo.y + 2, 26, 26);
+      ctx.fillRect(trafo.x + 6, trafo.y + 6, 18, 12);
 
-      ctx.fillStyle = "#1A202C";
-      ctx.font = 'bold 12px "Pixelify Sans", monospace';
+      // Border
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(trafo.x, trafo.y, 30, 30);
+
+      // Label background (positioned below yellow part)
+      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+      ctx.fillRect(trafo.x + 3, trafo.y + 20, 24, 8);
+
+      // Trafo ID (white text for better contrast)
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = 'bold 8px "Press Start 2P", monospace';
       ctx.textAlign = "center";
-      ctx.fillText("⚡", trafo.x + 15, trafo.y + 18);
       ctx.fillText(trafo.id, trafo.x + 15, trafo.y + 26);
     });
 
+    // Reset line dash
     ctx.setLineDash([]);
   }, [gameData, activeTab]);
 
   if (!gameData) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
-        <div
-          className="text-2xl"
-          style={{ fontFamily: '"Pixelify Sans", monospace' }}
-        >
-          Loading solution...
-        </div>
+      <div
+        className="min-h-screen bg-white flex items-center justify-center"
+        style={{ fontFamily: '"Press Start 2P", cursive' }}
+      >
+        <div className="text-2xl text-[#3b6ea5]">Loading solution...</div>
       </div>
     );
   }
@@ -251,385 +293,378 @@ export default function SolutionPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white"
-      style={{ fontFamily: '"Pixelify Sans", monospace' }}
+      className="min-h-screen bg-white"
+      style={{ fontFamily: '"Press Start 2P", cursive' }}
     >
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4 text-yellow-400">
+      {/* Main content */}
+      <main className="px-6 pb-12 max-w-7xl mx-auto w-full">
+        {/* Title Section */}
+        <div className="relative max-w-6xl mt-16">
+          <div className="absolute -top-8 left-0 bg-[#3b6ea5] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl rounded-bl-none px-6 py-2 text-white text-[14px] select-none">
             {surrendered
-              ? "🏳️ GAME SOLUTION"
+              ? "Game Solution"
               : isCorrect
-              ? "🏆 PERFECT SCORE!"
-              : "📊 SOLUTION ANALYSIS"}
-          </h1>
-          {!surrendered && (
-            <div className="flex items-center justify-center space-x-4 text-2xl">
-              {isCorrect ? (
-                <>
-                  <CheckCircle className="text-green-400" size={40} />
-                  <span className="text-green-400">
-                    🎉 Congratulations! Your solution is optimal! 🎉
-                  </span>
-                </>
-              ) : (
-                <>
-                  <XCircle className="text-red-400" size={40} />
-                  <span className="text-red-400">
-                    ⚠️ Your solution needs improvement. Let&apos;s learn! ⚠️
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <div className="border-b-2 border-yellow-600">
-            <nav className="-mb-px flex space-x-8 justify-center">
-              {[
-                { id: "result", label: "📊 Your Result", icon: Target },
-                { id: "kruskal", label: "🔧 Kruskal Solution", icon: Award },
-                { id: "prim", label: "⚡ Prim Solution", icon: Award },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-3 px-6 text-lg font-bold border-b-4 transition-all ${
-                    activeTab === tab.id
-                      ? "border-yellow-400 text-yellow-400"
-                      : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+              ? "Perfect Score!"
+              : "Solution Analysis"}
           </div>
-        </div>
-
-        {/* Tab Content */}
-        <div className="space-y-8">
-          {activeTab === "result" && (
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Your Solution */}
-              <div className="bg-slate-800 rounded-lg p-6 border-2 border-red-500 shadow-lg">
-                <h3 className="text-2xl font-bold mb-4 text-red-400 flex items-center">
-                  <Target className="mr-2" size={28} />
-                  YOUR SOLUTION
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-lg">
-                    <span className="text-yellow-300">Your Total Weight:</span>
-                    <span
-                      className={`font-bold text-xl ${
-                        isCorrect ? "text-green-400" : "text-red-400"
-                      }`}
-                    >
-                      {gameData.playerWeight}
-                    </span>
+          <div className="mt-6 bg-[#fbbf24] rounded-xl p-1">
+            <div className="bg-[#fef1c7] rounded-lg p-6 text-[14px] text-black leading-relaxed">
+              {surrendered && (
+                <div className="text-center mb-6">
+                  <div className="text-[#3b6ea5] text-[16px] font-bold mb-2">
+                    🏳️ Game Solution
                   </div>
-                  <div className="flex justify-between text-lg">
-                    <span className="text-yellow-300">Cables Selected:</span>
-                    <span className="text-blue-400 font-bold">
-                      {gameData.selectedCables.length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-lg">
-                    <span className="text-yellow-300">Required Cables:</span>
-                    <span className="text-blue-400 font-bold">
-                      {gameData.trafos.length - 1}
-                    </span>
+                  <div className="text-[12px]">
+                    Tidak apa-apa! Mari kita pelajari solusi yang benar untuk
+                    memahami konsep MST dengan lebih baik.
                   </div>
                 </div>
+              )}
 
-                {gameData.selectedCables.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="text-lg font-bold mb-3 text-yellow-400">
-                      📋 Selected Cables:
-                    </h4>
-                    <div className="space-y-2">
-                      {gameData.selectedCables.map((edge, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between bg-slate-700 p-3 rounded border border-gray-600"
-                        >
-                          <span className="font-mono">
-                            🔌 {edge.from} ↔ {edge.to}
-                          </span>
-                          <span className="text-yellow-400 font-bold">
-                            {edge.weight}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+              {!surrendered && isCorrect && (
+                <div className="text-center mb-6">
+                  <div className="text-[#3b6ea5] text-[16px] font-bold mb-2">
+                    🏆 Perfect Score!
                   </div>
-                )}
+                  <div className="text-[12px]">
+                    Selamat! Anda berhasil menemukan Minimum Spanning Tree yang
+                    optimal. Jawaban Anda sudah benar dengan total bobot
+                    minimum.
+                  </div>
+                </div>
+              )}
+
+              {!surrendered && !isCorrect && (
+                <div className="text-center mb-6">
+                  <div className="text-[#3b6ea5] text-[16px] font-bold mb-2">
+                    📊 Solution Analysis
+                  </div>
+                  <div className="text-[12px]">
+                    Jawaban Anda masih belum optimal. Mari kita analisis dan
+                    pelajari solusi yang benar menggunakan algoritma Kruskal dan
+                    Prim.
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Tabs */}
+              <div className="flex space-x-2 mb-6 justify-center">
+                {[
+                  { id: "result", label: "Your Result" },
+                  { id: "kruskal", label: "Kruskal Solution" },
+                  { id: "prim", label: "Prim Solution" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-4 py-2 text-[10px] border-2 border-black rounded ${
+                      activeTab === tab.id
+                        ? "bg-[#3b6ea5] text-white"
+                        : "bg-white text-black hover:bg-gray-100"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              {/* Optimal Solution */}
-              <div className="bg-slate-800 rounded-lg p-6 border-2 border-green-500 shadow-lg">
-                <h3 className="text-2xl font-bold mb-4 text-green-400 flex items-center">
-                  <Award className="mr-2" size={28} />
-                  OPTIMAL SOLUTION (MST)
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-lg">
-                    <span className="text-yellow-300">Optimal Weight:</span>
-                    <span className="text-green-400 font-bold text-xl">
-                      {gameData.mstWeight}
-                    </span>
+              {/* Tab Content */}
+              {activeTab === "result" && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Your Solution */}
+                  <div className="bg-white border-2 border-black rounded-lg p-4">
+                    <div className="bg-[#3b6ea5] text-white px-3 py-1 text-[12px] font-bold mb-3 rounded">
+                      YOUR SOLUTION
+                    </div>
+
+                    <div className="space-y-3 text-[10px]">
+                      <div className="flex justify-between">
+                        <span>Your Total Weight:</span>
+                        <span
+                          className={`font-bold ${
+                            isCorrect ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {gameData.playerWeight}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cables Selected:</span>
+                        <span className="text-[#3b6ea5] font-bold">
+                          {gameData.selectedCables.length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Required Cables:</span>
+                        <span className="text-[#3b6ea5] font-bold">
+                          {gameData.trafos.length - 1}
+                        </span>
+                      </div>
+                    </div>
+
+                    {gameData.selectedCables.length > 0 && (
+                      <div className="mt-4">
+                        <div className="text-[10px] font-bold mb-2">
+                          Selected Cables:
+                        </div>
+                        <div className="space-y-1">
+                          {gameData.selectedCables.map((edge, index) => (
+                            <div
+                              key={index}
+                              className="flex justify-between bg-gray-100 p-2 rounded text-[9px]"
+                            >
+                              <span>
+                                {edge.from} ↔ {edge.to}
+                              </span>
+                              <span className="font-bold">{edge.weight}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between text-lg">
-                    <span className="text-yellow-300">Difference:</span>
-                    <span
-                      className={`font-bold text-xl ${
-                        gameData.playerWeight - gameData.mstWeight === 0
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      +{gameData.playerWeight - gameData.mstWeight}
-                    </span>
+
+                  {/* Optimal Solution */}
+                  <div className="bg-white border-2 border-black rounded-lg p-4">
+                    <div className="bg-green-600 text-white px-3 py-1 text-[12px] font-bold mb-3 rounded">
+                      OPTIMAL SOLUTION (MST)
+                    </div>
+
+                    <div className="space-y-3 text-[10px]">
+                      <div className="flex justify-between">
+                        <span>Optimal Weight:</span>
+                        <span className="text-green-600 font-bold">
+                          {gameData.mstWeight}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Difference:</span>
+                        <span
+                          className={`font-bold ${
+                            gameData.playerWeight - gameData.mstWeight === 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          +{gameData.playerWeight - gameData.mstWeight}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="text-[10px] font-bold mb-2">
+                        MST Cables:
+                      </div>
+                      <div className="space-y-1">
+                        {gameData.mst.map((edge, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between bg-green-100 p-2 rounded text-[9px]"
+                          >
+                            <span>
+                              {edge.from} ↔ {edge.to}
+                            </span>
+                            <span className="text-green-600 font-bold">
+                              {edge.weight}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Visual representation */}
+                    <div className="mt-4">
+                      <div className="text-[10px] font-bold mb-2">
+                        Visual MST:
+                      </div>
+                      <div className="border-2 border-black rounded bg-white p-2">
+                        <canvas
+                          ref={canvasRef}
+                          width={500}
+                          height={380}
+                          className="w-full h-auto max-w-full"
+                          style={{ imageRendering: "pixelated" }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div className="mt-6">
-                  <h4 className="text-lg font-bold mb-3 text-green-400">
-                    🎯 MST Cables:
-                  </h4>
+              {activeTab === "kruskal" && (
+                <div className="bg-white border-2 border-black rounded-lg p-4">
+                  <div className="bg-green-600 text-white px-3 py-1 text-[12px] font-bold mb-3 rounded">
+                    KRUSKAL ALGORITHM SOLUTION
+                  </div>
+
+                  <div className="mb-4 bg-gray-100 p-3 rounded text-[10px]">
+                    <div className="font-bold mb-2">Algorithm Steps:</div>
+                    <div className="space-y-1">
+                      <div>1. Sort all cables by weight (ascending)</div>
+                      <div>2. Initialize Union-Find data structure</div>
+                      <div>3. For each cable, check if it creates a cycle</div>
+                      <div>4. If no cycle, add cable to MST</div>
+                      <div>5. Repeat until MST has V-1 cables</div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    {gameData.mst.map((edge, index) => (
+                    <div className="text-[11px] font-bold">
+                      Step-by-Step Execution:
+                    </div>
+                    {kruskalSteps.map((step, index) => (
                       <div
                         key={index}
-                        className="flex justify-between bg-slate-700 p-3 rounded border border-green-600"
+                        className={`p-2 rounded border text-[9px] ${
+                          step.action === "added"
+                            ? "border-green-500 bg-green-50"
+                            : "border-red-500 bg-red-50"
+                        }`}
                       >
-                        <span className="font-mono">
-                          ⚡ {edge.from} ↔ {edge.to}
-                        </span>
-                        <span className="text-green-400 font-bold">
-                          {edge.weight}
-                        </span>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold">Step {step.step}</span>
+                          <span
+                            className={`px-2 py-1 rounded text-[8px] font-bold ${
+                              step.action === "added"
+                                ? "bg-green-500 text-white"
+                                : "bg-red-500 text-white"
+                            }`}
+                          >
+                            {step.action.toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span>
+                              Cable: {step.edge.from}-{step.edge.to}
+                            </span>
+                          </div>
+                          <div>
+                            <span>Weight: {step.edge.weight}</span>
+                          </div>
+                          <div>
+                            <span>Reason: {step.reason}</span>
+                          </div>
+                          <div>
+                            <span>Total: {step.totalWeight}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* Visual representation */}
-                <div className="mt-6">
-                  <h4 className="text-lg font-bold mb-3 text-green-400">
-                    🗺️ Visual MST:
-                  </h4>
-                  <canvas
-                    ref={canvasRef}
-                    width={400}
-                    height={300}
-                    className="w-full border-2 border-green-500 rounded bg-slate-700"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+              {activeTab === "prim" && (
+                <div className="bg-white border-2 border-black rounded-lg p-4">
+                  <div className="bg-purple-600 text-white px-3 py-1 text-[12px] font-bold mb-3 rounded">
+                    PRIM ALGORITHM SOLUTION
+                  </div>
 
-          {activeTab === "kruskal" && (
-            <div className="bg-slate-800 rounded-lg p-6 border-2 border-green-500 shadow-lg">
-              <h3 className="text-3xl font-bold mb-6 text-green-400 flex items-center">
-                <Award className="mr-3" size={36} />
-                🔧 KRUSKAL ALGORITHM SOLUTION
-              </h3>
+                  <div className="mb-4 bg-gray-100 p-3 rounded text-[10px]">
+                    <div className="font-bold mb-2">Algorithm Steps:</div>
+                    <div className="space-y-1">
+                      <div>1. Start with an arbitrary transformer</div>
+                      <div>2. Add it to MST set</div>
+                      <div>
+                        3. Find minimum weight cable connecting MST to non-MST
+                        transformer
+                      </div>
+                      <div>4. Add that cable and transformer to MST</div>
+                      <div>5. Repeat until all transformers are in MST</div>
+                    </div>
+                  </div>
 
-              <div className="mb-8 bg-slate-700 p-4 rounded-lg">
-                <h4 className="text-xl font-bold mb-3 text-yellow-400">
-                  📋 Algorithm Steps:
-                </h4>
-                <ol className="space-y-2 text-lg text-gray-300">
-                  <li>1️⃣ Sort all cables by weight (ascending)</li>
-                  <li>2️⃣ Initialize Union-Find data structure</li>
-                  <li>3️⃣ For each cable, check if it creates a cycle</li>
-                  <li>4️⃣ If no cycle, add cable to MST</li>
-                  <li>5️⃣ Repeat until MST has V-1 cables</li>
-                </ol>
-              </div>
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-bold">
+                      Step-by-Step Execution:
+                    </div>
 
-              <div className="space-y-4">
-                <h4 className="text-2xl font-bold text-yellow-400">
-                  🔄 Step-by-Step Execution:
-                </h4>
-                {kruskalSteps.map((step, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border-l-4 ${
-                      step.action === "added"
-                        ? "border-green-500 bg-green-900/20"
-                        : "border-red-500 bg-red-900/20"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-xl font-bold">
-                        Step {step.step}
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded text-sm font-bold ${
-                          step.action === "added"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                        }`}
+                    <div className="p-2 rounded border border-purple-500 bg-purple-50 text-[9px]">
+                      <div className="font-bold mb-1">Initial Step</div>
+                      <div>Starting transformer: {gameData.trafos[0].id}</div>
+                    </div>
+
+                    {primSteps.map((step, index) => (
+                      <div
+                        key={index}
+                        className="p-2 rounded border border-purple-500 bg-purple-50 text-[9px]"
                       >
-                        {step.action.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-base">
-                      <div>
-                        <span className="text-gray-400">Weight:</span>{" "}
-                        <span className="font-bold">{step.edge.weight}</span>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold">Step {step.step}</span>
+                          <span className="px-2 py-1 rounded text-[8px] font-bold bg-purple-500 text-white">
+                            ADDED
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span>
+                              Cable: {step.edge.from}-{step.edge.to}
+                            </span>
+                          </div>
+                          <div>
+                            <span>Weight: {step.edge.weight}</span>
+                          </div>
+                          <div>
+                            <span>New Transformer: {step.newVertex}</span>
+                          </div>
+                          <div>
+                            <span>Total: {step.totalWeight}</span>
+                          </div>
+                        </div>
+                        <div className="mt-1">
+                          <span>MST Set: {step.visitedSet.join(", ")}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-gray-400">Reason:</span>{" "}
-                        {step.reason}
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Total Weight:</span>{" "}
-                        <span className="font-bold text-yellow-400">
-                          {step.totalWeight}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "prim" && (
-            <div className="bg-slate-800 rounded-lg p-6 border-2 border-purple-500 shadow-lg">
-              <h3 className="text-3xl font-bold mb-6 text-purple-400 flex items-center">
-                <Award className="mr-3" size={36} />⚡ PRIM ALGORITHM SOLUTION
-              </h3>
-
-              <div className="mb-8 bg-slate-700 p-4 rounded-lg">
-                <h4 className="text-xl font-bold mb-3 text-yellow-400">
-                  📋 Algorithm Steps:
-                </h4>
-                <ol className="space-y-2 text-lg text-gray-300">
-                  <li>1️⃣ Start with an arbitrary tower</li>
-                  <li>2️⃣ Add it to MST set</li>
-                  <li>
-                    3️⃣ Find minimum weight cable connecting MST to non-MST tower
-                  </li>
-                  <li>4️⃣ Add that cable and tower to MST</li>
-                  <li>5️⃣ Repeat until all towers are in MST</li>
-                </ol>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-2xl font-bold text-yellow-400">
-                  🔄 Step-by-Step Execution:
-                </h4>
-                <div className="p-4 rounded-lg border-l-4 border-purple-500 bg-purple-900/20">
-                  <div className="text-xl font-bold mb-2">Initial Step</div>
-                  <div className="text-base">
-                    <span className="text-gray-400">Starting tower:</span>{" "}
-                    <span className="font-bold text-yellow-400">
-                      ⚡ {gameData.trafos[0].id}
-                    </span>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {primSteps.map((step, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-lg border-l-4 border-purple-500 bg-purple-900/20"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-xl font-bold">
-                        Step {step.step}
-                      </span>
-                      <span className="px-3 py-1 rounded text-sm font-bold bg-purple-500 text-white">
-                        ADDED
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-base">
-                      <div>
-                        <span className="text-gray-400">Cable:</span>{" "}
-                        <span className="font-mono">
-                          ⚡ {step.edge.from} ↔ {step.edge.to}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Weight:</span>{" "}
-                        <span className="font-bold">{step.edge.weight}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">New Tower:</span>{" "}
-                        <span className="font-bold text-yellow-400">
-                          ⚡ {step.newVertex}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Total Weight:</span>{" "}
-                        <span className="font-bold text-yellow-400">
-                          {step.totalWeight}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <span className="text-gray-400">MST Set:</span>{" "}
-                      <span className="font-mono">
-                        {step.visitedSet.map((v) => `⚡${v}`).join(", ")}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              {/* Action Buttons */}
+              <div className="flex justify-center space-x-4 mt-6">
+                <button
+                  onClick={() => router.push("/game")}
+                  className="bg-[#3b6ea5] text-white px-4 py-2 rounded border-2 border-black hover:bg-[#2d5a8a] transition-colors text-[10px] font-bold"
+                >
+                  PLAY AGAIN
+                </button>
+
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-white text-[#3b6ea5] px-4 py-2 rounded border-2 border-[#3b6ea5] hover:bg-gray-100 transition-colors text-[10px] font-bold"
+                >
+                  BACK TO HOME
+                </button>
               </div>
+
+              {/* Final Score Summary */}
+              {!surrendered && (
+                <div
+                  className={`mt-6 text-center p-4 rounded border-2 ${
+                    isCorrect
+                      ? "bg-green-100 border-green-500 text-green-800"
+                      : "bg-red-100 border-red-500 text-red-800"
+                  }`}
+                >
+                  <div className="text-[12px] font-bold mb-1">
+                    {isCorrect
+                      ? "🏆 MISSION ACCOMPLISHED! 🏆"
+                      : "📈 MISSION ANALYSIS 📈"}
+                  </div>
+                  <div className="text-[10px]">
+                    {isCorrect
+                      ? "You successfully found the optimal power grid configuration!"
+                      : `Your solution cost ${
+                          gameData.playerWeight - gameData.mstWeight
+                        } more than optimal. Study the algorithms above to improve!`}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center space-x-6 mt-12">
-          <button
-            onClick={() => router.push("/game")}
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-4 px-8 rounded-lg flex items-center space-x-3 font-bold text-lg transition-all"
-          >
-            <RotateCcw size={24} />
-            <span>🎮 PLAY AGAIN</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/")}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 px-8 rounded-lg flex items-center space-x-3 font-bold text-lg transition-all"
-          >
-            <Home size={24} />
-            <span>🏠 BACK TO HOME</span>
-          </button>
-        </div>
-
-        {/* Final Score Summary */}
-        {!surrendered && (
-          <div
-            className={`mt-8 text-center p-6 rounded-lg border-2 ${
-              isCorrect
-                ? "bg-green-900/30 border-green-500 text-green-400"
-                : "bg-red-900/30 border-red-500 text-red-400"
-            }`}
-          >
-            <h3 className="text-2xl font-bold mb-2">
-              {isCorrect
-                ? "🏆 MISSION ACCOMPLISHED! 🏆"
-                : "📈 MISSION ANALYSIS 📈"}
-            </h3>
-            <p className="text-lg">
-              {isCorrect
-                ? "You successfully found the optimal power grid configuration!"
-                : `Your solution cost ${
-                    gameData.playerWeight - gameData.mstWeight
-                  } more than optimal. Study the algorithms above to improve!`}
-            </p>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
