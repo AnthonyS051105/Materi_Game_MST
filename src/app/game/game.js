@@ -327,25 +327,115 @@ export default function ImprovedGamePage() {
         ctx.lineTo(toTrafo.x + 40, toTrafo.y + 40);
         ctx.stroke();
 
-        // Draw weight label with better contrast - LARGER LABELS
+        // Draw weight label with intelligent positioning to avoid trafo overlap
         const midX = (fromTrafo.x + toTrafo.x) / 2 + 40;
         const midY = (fromTrafo.y + toTrafo.y) / 2 + 40;
 
+        // Calculate label offset to avoid trafo overlap
+        let labelX = midX;
+        let labelY = midY;
+
+        // Check if label position conflicts with any trafo and adjust if needed
+        let labelAdjusted = false;
+        for (const trafo of trafos) {
+          const trafoX = trafo.x + 40; // Center of trafo
+          const trafoY = trafo.y + 40;
+          const distToTrafo = Math.sqrt(
+            Math.pow(labelX - trafoX, 2) + Math.pow(labelY - trafoY, 2)
+          );
+
+          // If label is too close to a trafo (within 60px), move it
+          if (distToTrafo < 60) {
+            // Calculate perpendicular offset from line
+            const lineVecX = toTrafo.x - fromTrafo.x;
+            const lineVecY = toTrafo.y - fromTrafo.y;
+            const lineLength = Math.sqrt(
+              lineVecX * lineVecX + lineVecY * lineVecY
+            );
+
+            if (lineLength > 0) {
+              // Perpendicular vector (rotated 90 degrees)
+              const perpX = -lineVecY / lineLength;
+              const perpY = lineVecX / lineLength;
+
+              // Try both directions and pick the one further from trafos
+              const offset = 35;
+              const option1X = midX + perpX * offset;
+              const option1Y = midY + perpY * offset;
+              const option2X = midX - perpX * offset;
+              const option2Y = midY - perpY * offset;
+
+              // Calculate distances to all trafos for both options
+              let option1MinDist = Infinity;
+              let option2MinDist = Infinity;
+
+              for (const t of trafos) {
+                const tX = t.x + 40;
+                const tY = t.y + 40;
+                const dist1 = Math.sqrt(
+                  Math.pow(option1X - tX, 2) + Math.pow(option1Y - tY, 2)
+                );
+                const dist2 = Math.sqrt(
+                  Math.pow(option2X - tX, 2) + Math.pow(option2Y - tY, 2)
+                );
+                option1MinDist = Math.min(option1MinDist, dist1);
+                option2MinDist = Math.min(option2MinDist, dist2);
+              }
+
+              // Choose the option with greater minimum distance to trafos
+              if (option1MinDist > option2MinDist) {
+                labelX = option1X;
+                labelY = option1Y;
+              } else {
+                labelX = option2X;
+                labelY = option2Y;
+              }
+
+              labelAdjusted = true;
+              break;
+            }
+          }
+        }
+
+        // Additional check: ensure label stays within canvas bounds
+        const labelWidth = 50;
+        const labelHeight = 36;
+        labelX = Math.max(
+          labelWidth / 2,
+          Math.min(canvas.width - labelWidth / 2, labelX)
+        );
+        labelY = Math.max(
+          labelHeight / 2,
+          Math.min(canvas.height - labelHeight / 2, labelY)
+        );
+
         // Draw label background with dark background for better contrast - LARGER
         ctx.fillStyle = isSelected ? "#CC0000" : "#000000";
-        ctx.fillRect(midX - 25, midY - 18, 50, 36);
+        ctx.fillRect(labelX - 25, labelY - 18, 50, 36);
 
         // Draw label border - THICKER
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 3;
         ctx.setLineDash([]);
-        ctx.strokeRect(midX - 25, midY - 18, 50, 36);
+        ctx.strokeRect(labelX - 25, labelY - 18, 50, 36);
+
+        // Draw connection line from label to edge midpoint if label was moved
+        if (labelAdjusted) {
+          ctx.strokeStyle = isSelected ? "#CC0000" : "#666666";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(labelX, labelY);
+          ctx.lineTo(midX, midY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
 
         // Draw weight text with larger font - LARGER TEXT
         ctx.fillStyle = "#FFFFFF";
         ctx.font = 'bold 18px "Press Start 2P", monospace';
         ctx.textAlign = "center";
-        ctx.fillText(cable.weight.toString(), midX, midY + 6);
+        ctx.fillText(cable.weight.toString(), labelX, labelY + 6);
       });
 
       // Draw trafos using image asset - LARGER TRAFOS
