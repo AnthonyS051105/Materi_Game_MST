@@ -5,7 +5,7 @@ import { Zap, Play, RotateCcw } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 import AlgorithmStep from "../components/AlgorithmStep";
 import TextEditor from "../components/TextEditor";
-import PseudoText from "../components/Pseudocode"
+import PseudoText from "../components/Pseudocode";
 
 const primCode = `// Kode algoritma prim
 typedef pair<int, int> pii;
@@ -43,7 +43,7 @@ int spanningTree(int V, int E, vector<vector<int>> &edges) {
     }
     return res;
 }
-`
+`;
 
 const mainCode = `// implementasi algoritma prim
 int main() {
@@ -59,7 +59,7 @@ int main() {
 
     return 0;
 }
-`
+`;
 
 const primPseudoCode = `FUNCTION spanning Tree (V, E, edges): 
   adj = ARRAY[V] OF LISTS 
@@ -81,7 +81,7 @@ const primPseudoCode = `FUNCTION spanning Tree (V, E, edges):
       IF NOT visited[v]: 
         pq.PUSH((edge_wt, v)) 
   RETURN res 
-`
+`;
 
 export default function Prim() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -174,7 +174,11 @@ export default function Prim() {
             Algoritma Prim
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Algoritma Prim adalah algoritma greedy yang digunakan untuk mencari Minimum Spanning Tree (MST) dari sebuah graf berbobot dan terhubung. Algoritma ini dimulai dari satu simpul dan secara bertahap menambahkan sisi dengan bobot terkecil yang menghubungkan simpul yang sudah dikunjungi ke simpul yang belum dikunjungi.
+            Algoritma Prim adalah algoritma greedy yang digunakan untuk mencari
+            Minimum Spanning Tree (MST) dari sebuah graf berbobot dan terhubung.
+            Algoritma ini dimulai dari satu simpul dan secara bertahap
+            menambahkan sisi dengan bobot terkecil yang menghubungkan simpul
+            yang sudah dikunjungi ke simpul yang belum dikunjungi.
           </p>
         </div>
 
@@ -238,12 +242,12 @@ export default function Prim() {
                 <div>
                   <span className="font-medium">Space Complexity:</span>
                   <span className="ml-2 bg-purple-100 px-2 py-1 rounded text-sm">
-                    O(E + V)
+                    O(V) atau O(E + V)
                   </span>
                 </div>
                 <p className="text-purple-700 text-sm mt-3">
-                  O(V²) dengan array, O((E + V) log V) dengan priority queue (heap).
-                  Lebih efisien untuk dense graph.
+                  O(V²) dengan array, O((E + V) log V) dengan priority queue
+                  (heap). Lebih efisien untuk dense graph.
                 </p>
               </div>
             </div>
@@ -410,11 +414,15 @@ export default function Prim() {
             </table>
           </div>
         </div>
-        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">Pseudocode Algoritma Kruskal</h1>
+        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">
+          Pseudocode Algoritma Kruskal
+        </h1>
         <div className="flex justify-center items-center pt-2">
           <PseudoText pseudoCode={primPseudoCode} />
         </div>
-        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">Implementasi Algoritma Prim dalam C++</h1>
+        <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">
+          Implementasi Algoritma Prim dalam C++
+        </h1>
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <TextEditor cppCode={primCode} />
           <TextEditor cppCode={mainCode} />

@@ -46,7 +46,7 @@ export default function Perbandingan() {
       icon: Zap,
       color: "purple",
       timeComplexity: "O(V²) atau O((E + V) log V)",
-      spaceComplexity: "O(E + V)",
+      spaceComplexity: "O(V) atau O(E + V)",
       approach: "Vertex-based",
       dataStructure: "Priority Queue/Heap",
       advantages: [
@@ -85,8 +85,8 @@ export default function Perbandingan() {
     },
     {
       criteria: "Memory Usage",
-      kruskal: "O(V) untuk Union-Find",
-      prim: "O(V) untuk Priority Queue",
+      kruskal: "O(E + V) untuk Union-Find",
+      prim: "O(V) dan O(E + V) untuk Priority Queue",
       winner: "tie",
     },
     {
