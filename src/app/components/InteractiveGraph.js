@@ -12,13 +12,25 @@ export default function InteractiveGraph({
   const [animatedEdges, setAnimatedEdges] = useState([]);
 
   useEffect(() => {
+    if (highlightedEdges.length === 0 & animatedEdges.length === 0) {
+      return;
+    }
+    
+    // let timeouts = [];
+
+    setAnimatedEdges([]);
     if (highlightedEdges.length > 0) {
       highlightedEdges.forEach((edge, index) => {
-        setTimeout(() => {
-          setAnimatedEdges((prev) => [...prev, edge]);
-        }, index * 500);
+        // const timeout = setTimeout(() => {
+        //   setAnimatedEdges((prev) => [...prev, edge]);
+        // }, index * 100);
+        // timeouts.push(timeout);
+        setAnimatedEdges((prev) => [...prev, edge]);
       });
     }
+    // return () => {
+    //   timeouts.forEach(clearTimeout);
+    // };
   }, [highlightedEdges]);
 
   const getEdgeKey = (edge) => `${edge.from}-${edge.to}`;
