@@ -10,6 +10,9 @@ import {
   Building, // For building internet
   Zap, // For electrical networks
   LayoutGrid, // For clustering analysis
+  Droplet, // For water/gas pipes
+  Cable, // For fiber optics
+  Map, // Replaced Road with Map for road networks/routes
 } from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 
@@ -359,11 +362,6 @@ export default function Pengertian() {
   // NEW: Real-world applications of MST
   const realUseCases = [
     {
-      title: "Jaringan Komunikasi Antar Kota",
-      description: "Merancang jaringan kabel atau serat optik antar kota dengan biaya instalasi atau jarak yang minimal, memastikan semua kota terhubung.",
-      icon: Globe,
-    },
-    {
       title: "Jaringan Internet Gedung",
       description: "Menyusun tata letak kabel jaringan (LAN) di dalam gedung untuk menghubungkan semua komputer dan perangkat dengan panjang kabel seminimal mungkin.",
       icon: Building,
@@ -377,6 +375,21 @@ export default function Pengertian() {
       title: "Clustering Analysis",
       description: "Dalam data science, MST dapat digunakan untuk mengidentifikasi cluster dalam kumpulan data dengan menghubungkan titik-titik data terdekat dan kemudian memutuskan edge terpanjang untuk memisahkan cluster.",
       icon: LayoutGrid,
+    },
+    {
+      title: "Sistem Pipa Air dan Gas",
+      description: "Merencanakan jaringan pipa untuk distribusi air atau gas ke berbagai lokasi dengan meminimalkan total panjang pipa atau biaya konstruksi.",
+      icon: Droplet,
+    },
+    {
+      title: "Jaringan Fiber Optik",
+      description: "Mengoptimalkan penempatan kabel fiber optik untuk menghubungkan berbagai titik data dengan biaya terkecil, memastikan konektivitas berkecepatan tinggi.",
+      icon: Cable,
+    },
+    {
+      title: "Perencanaan Jaringan Jalan/Rute",
+      description: "Mendesain jaringan jalan atau rute transportasi yang menghubungkan semua lokasi penting dengan total panjang jalan atau waktu tempuh yang minimal.",
+      icon: Map, // Changed from Road to Map
     },
   ];
 
@@ -398,7 +411,7 @@ export default function Pengertian() {
                 { id: "definition", label: "Pengertian" },
                 { id: "characteristics", label: "Karakteristik" },
                 { id: "requirements", label: "Syarat" },
-                { id: "real-use", label: "Real-Use" }, // NEW TAB
+                { id: "real-use", label: "Real-Use" },
               ].map((tab) => {
                 return (
                   <button
@@ -726,7 +739,8 @@ export default function Pengertian() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
               Penggunaan MST di Dunia Nyata
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {/* Added flex and justify-center to the grid container */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 justify-items-center">
               {realUseCases.map((useCase, index) => (
                 <div
                   key={index}
