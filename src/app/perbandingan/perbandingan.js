@@ -18,7 +18,7 @@ export default function Perbandingan() {
       name: "Algoritma Kruskal",
       icon: Settings,
       color: "green",
-      timeComplexity: "O(E log E)",
+      timeComplexity: "O(E log E) atau O(E log V)",
       spaceComplexity: "O(E + V)",
       approach: "Edge-based",
       dataStructure: "Union-Find (Disjoint Set)",
