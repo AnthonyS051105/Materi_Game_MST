@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, BookOpen, Lightbulb } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  BookOpen,
+  Lightbulb,
+  Globe, // For communication networks
+  Building, // For building internet
+  Zap, // For electrical networks
+  LayoutGrid, // For clustering analysis
+} from "lucide-react";
 import InteractiveGraph from "../components/InteractiveGraph";
 
 export default function Pengertian() {
@@ -13,7 +22,7 @@ export default function Pengertian() {
     { id: "B", label: "B", x: 300, y: 100 },
     { id: "C", label: "C", x: 500, y: 100 },
     { id: "D", label: "D", x: 200, y: 250 },
-    { id: "E", "label": "E", x: 400, y: 250 },
+    { id: "E", label: "E", x: 400, y: 250 },
   ];
 
   const graphEdges = [
@@ -249,33 +258,33 @@ export default function Pengertian() {
         "Meskipun ini spanning tree yang valid (terhubung, asiklik, V-1 edge), total bobotnya (5+7+6=18) bukan yang paling minimum. Seharusnya memilih edge 1-3 (bobot 1) daripada 1-2 (bobot 5), dan 2-4 (bobot 2) daripada 2-3 (bobot 7) atau 3-4 (bobot 6). MST yang benar bisa 1-3 (1), 2-4 (2), 1-2 (5) dengan total 8. (atau 1-3, 3-4, 2-4)",
     },
     {
-        type: "incorrect",
-        title: "Contoh MST yang Salah (Mengabaikan Bobot Lebih Kecil)",
-        graph: {
-            nodes: [
-                { id: "P", label: "P", x: 100, y: 100 },
-                { id: "Q", label: "Q", x: 300, y: 100 },
-                { id: "R", label: "R", x: 200, y: 200 },
-                { id: "S", label: "S", x: 400, y: 200 },
-            ],
-            edges: [
-                { from: "P", to: "Q", weight: 5 },
-                { from: "P", to: "R", weight: 1 },
-                { from: "Q", to: "R", weight: 6 },
-                { from: "Q", to: "S", weight: 2 },
-                { from: "R", to: "S", weight: 7 },
-            ],
-        },
-        mst: {
-            edges: [
-                { from: "P", to: "Q", weight: 5, color: "red", label: "5" },
-                { from: "Q", to: "R", weight: 6, color: "red", label: "6" },
-                { from: "Q", to: "S", weight: 2, color: "red", label: "2" },
-            ],
-        },
-        reason:
-            "Ini bukan MST dengan bobot minimum. Edge P-R (bobot 1) diabaikan, padahal itu edge termurah yang bisa menghubungkan P ke R tanpa membentuk siklus. Total bobot yang dipilih (5+6+2=13) lebih besar dari MST sebenarnya (P-R (1), Q-S (2), P-Q (5) -> total 8).",
-    }
+      type: "incorrect",
+      title: "Contoh MST yang Salah (Mengabaikan Bobot Lebih Kecil)",
+      graph: {
+        nodes: [
+          { id: "P", label: "P", x: 100, y: 100 },
+          { id: "Q", label: "Q", x: 300, y: 100 },
+          { id: "R", label: "R", x: 200, y: 200 },
+          { id: "S", label: "S", x: 400, y: 200 },
+        ],
+        edges: [
+          { from: "P", to: "Q", weight: 5 },
+          { from: "P", to: "R", weight: 1 },
+          { from: "Q", to: "R", weight: 6 },
+          { from: "Q", to: "S", weight: 2 },
+          { from: "R", to: "S", weight: 7 },
+        ],
+      },
+      mst: {
+        edges: [
+          { from: "P", to: "Q", weight: 5, color: "red", label: "5" },
+          { from: "Q", to: "R", weight: 6, color: "red", label: "6" },
+          { from: "Q", to: "S", weight: 2, color: "red", label: "2" },
+        ],
+      },
+      reason:
+        "Ini bukan MST dengan bobot minimum. Edge P-R (bobot 1) diabaikan, padahal itu edge termurah yang bisa menghubungkan P ke R tanpa membentuk siklus. Total bobot yang dipilih (5+6+2=13) lebih besar dari MST sebenarnya (P-R (1), Q-S (2), P-Q (5) -> total 8).",
+    },
   ];
 
   // NEW: Example graphs for "Syarat-syarat MST"
@@ -347,6 +356,29 @@ export default function Pengertian() {
     },
   ];
 
+  // NEW: Real-world applications of MST
+  const realUseCases = [
+    {
+      title: "Jaringan Komunikasi Antar Kota",
+      description: "Merancang jaringan kabel atau serat optik antar kota dengan biaya instalasi atau jarak yang minimal, memastikan semua kota terhubung.",
+      icon: Globe,
+    },
+    {
+      title: "Jaringan Internet Gedung",
+      description: "Menyusun tata letak kabel jaringan (LAN) di dalam gedung untuk menghubungkan semua komputer dan perangkat dengan panjang kabel seminimal mungkin.",
+      icon: Building,
+    },
+    {
+      title: "Jaringan Distribusi Listrik",
+      description: "Mendesain jalur transmisi dan distribusi listrik agar semua rumah atau area terlayani dengan biaya pembangunan infrastruktur yang paling efisien.",
+      icon: Zap,
+    },
+    {
+      title: "Clustering Analysis",
+      description: "Dalam data science, MST dapat digunakan untuk mengidentifikasi cluster dalam kumpulan data dengan menghubungkan titik-titik data terdekat dan kemudian memutuskan edge terpanjang untuk memisahkan cluster.",
+      icon: LayoutGrid,
+    },
+  ];
 
   return (
     <div className="min-h-screen py-12">
@@ -366,6 +398,7 @@ export default function Pengertian() {
                 { id: "definition", label: "Pengertian" },
                 { id: "characteristics", label: "Karakteristik" },
                 { id: "requirements", label: "Syarat" },
+                { id: "real-use", label: "Real-Use" }, // NEW TAB
               ].map((tab) => {
                 return (
                   <button
@@ -393,36 +426,36 @@ export default function Pengertian() {
           <div className="space-y-8 animate-fade-in">
             {/* Judul utama Pengertian */}
             <h2 className="text-3xl font-bold mb-6 text-gray-900 text-center">
-                Apa itu Minimum Spanning Tree?
+              Apa itu Minimum Spanning Tree?
             </h2>
 
             {/* Konten deskripsi MST */}
             <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
-                <p>
-                  <strong>Minimum Spanning Tree (MST)</strong> adalah sebuah
-                  spanning tree dari graf berbobot yang memiliki total bobot
-                  edge paling minimum. Spanning tree sendiri adalah subgraf yang
-                  menghubungkan semua vertex dalam graf asli tanpa membentuk
-                  siklus.
-                </p>
+              <p>
+                <strong>Minimum Spanning Tree (MST)</strong> adalah sebuah
+                spanning tree dari graf berbobot yang memiliki total bobot
+                edge paling minimum. Spanning tree sendiri adalah subgraf yang
+                menghubungkan semua vertex dalam graf asli tanpa membentuk
+                siklus.
+              </p>
 
-                <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
-                  <h3 className="font-semibold mb-2 text-blue-800">
-                    Definisi Formal:
-                  </h3>
-                  <p className="text-blue-700">
-                    Untuk graf G = (V, E) dengan bobot w(e) pada setiap edge e,
-                    MST adalah spanning tree T yang meminimalkan ∑w(e) untuk
-                    semua e ∈ T.
-                  </p>
-                </div>
-
-                <p>
-                  MST memiliki aplikasi yang sangat luas dalam kehidupan nyata,
-                  seperti merancang jaringan komunikasi dengan biaya minimum,
-                  sistem distribusi listrik, perencanaan transportasi, dan
-                  banyak lagi.
+              <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                <h3 className="font-semibold mb-2 text-blue-800">
+                  Definisi Formal:
+                </h3>
+                <p className="text-blue-700">
+                  Untuk graf G = (V, E) dengan bobot w(e) pada setiap edge e,
+                  MST adalah spanning tree T yang meminimalkan ∑w(e) untuk
+                  semua e ∈ T.
                 </p>
+              </div>
+
+              <p>
+                MST memiliki aplikasi yang sangat luas dalam kehidupan nyata,
+                seperti merancang jaringan komunikasi dengan biaya minimum,
+                sistem distribusi listrik, perencanaan transportasi, dan
+                banyak lagi.
+              </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -581,17 +614,22 @@ export default function Pengertian() {
                   key={index}
                   className="bg-white rounded-lg shadow-md p-6 border border-gray-200 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-200"
                 >
-                  <div className="mb-2"> {/* Added margin bottom for icon */}
+                  <div className="mb-2">
+                    {" "}
+                    {/* Added margin bottom for icon */}
                     {req.valid ? (
                       <CheckCircle className="h-8 w-8 text-green-500" /> /* Larger icon */
                     ) : (
                       <XCircle className="h-8 w-8 text-red-500" /> /* Larger icon */
                     )}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2"> {/* Matched heading style */}
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {" "}
+                    {/* Matched heading style */}
                     {req.condition}
                   </h3>
-                  <p className="text-gray-700 text-base">{req.explanation}</p> {/* Matched paragraph style */}
+                  <p className="text-gray-700 text-base">{req.explanation}</p>{" "}
+                  {/* Matched paragraph style */}
                 </div>
               ))}
             </div>
@@ -652,7 +690,9 @@ export default function Pengertian() {
                       )}
                       {example.title}
                     </h4>
-                    <div className="flex justify-center mb-4"> {/* Center the graph */}
+                    <div className="flex justify-center mb-4">
+                      {" "}
+                      {/* Center the graph */}
                       <InteractiveGraph
                         nodes={example.graph.nodes}
                         edges={example.graph.edges}
@@ -676,6 +716,35 @@ export default function Pengertian() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Konten Tab: Real-Use */}
+        {activeTab === "real-use" && (
+          <div className="space-y-8 animate-fade-in">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+              Penggunaan MST di Dunia Nyata
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+              {realUseCases.map((useCase, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg shadow-md p-6 border border-gray-200 flex items-start space-x-4 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex-shrink-0">
+                    <useCase.icon className="h-10 w-10 text-[#3B75A8]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {useCase.title}
+                    </h3>
+                    <p className="text-gray-700 text-base">
+                      {useCase.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
