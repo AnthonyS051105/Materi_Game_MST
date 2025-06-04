@@ -415,7 +415,7 @@ export default function Prim() {
           </div>
         </div>
         <h1 className="text-2xl font-bold mb-6 text-purple-800 pt-4 pb-2">
-          Pseudocode Algoritma Kruskal
+          Pseudocode Algoritma Prim
         </h1>
         <div className="flex justify-center items-center pt-2">
           <PseudoText pseudoCode={primPseudoCode} />
